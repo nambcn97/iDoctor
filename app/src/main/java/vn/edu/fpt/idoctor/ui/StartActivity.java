@@ -1,4 +1,4 @@
-package vn.edu.fpt.idoctorapp.ui;
+package vn.edu.fpt.idoctor.ui;
 
 import android.content.Intent;
 import android.support.v7.app.AppCompatActivity;
@@ -6,7 +6,7 @@ import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
 
-import vn.edu.fpt.idoctorapp.R;
+import vn.edu.fpt.idoctor.R;
 
 public class StartActivity extends AppCompatActivity implements View.OnClickListener {
     private Button btnLogin, btnRegister, btnEmergency;

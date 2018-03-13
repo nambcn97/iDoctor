@@ -1,9 +1,9 @@
-package vn.edu.fpt.idoctorapp.ui;
+package vn.edu.fpt.idoctor.ui;
 
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 
-import vn.edu.fpt.idoctorapp.R;
+import vn.edu.fpt.idoctor.R;
 
 public class RegisterActivity extends AppCompatActivity {
 
