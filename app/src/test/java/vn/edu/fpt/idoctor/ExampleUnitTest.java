@@ -1,4 +1,4 @@
-package vn.edu.fpt.idoctorapp;
+package vn.edu.fpt.idoctor;
 
 import org.junit.Test;
 

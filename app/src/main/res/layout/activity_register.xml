@@ -4,6 +4,6 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context="vn.edu.fpt.idoctorapp.ui.RegisterActivity">
+    tools:context="vn.edu.fpt.idoctor.ui.RegisterActivity">
 
 </android.support.constraint.ConstraintLayout>

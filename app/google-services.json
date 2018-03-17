@@ -1,0 +1,55 @@
+{
+  "project_info": {
+    "project_number": "76588703845",
+    "firebase_url": "https://solid-skill-197919.firebaseio.com",
+    "project_id": "solid-skill-197919",
+    "storage_bucket": "solid-skill-197919.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:76588703845:android:19121da364e15965",
+        "android_client_info": {
+          "package_name": "vn.edu.fpt.idoctor"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "76588703845-h7arhio8r30uugci108tatefd2mvsfcp.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "vn.edu.fpt.idoctor",
+            "certificate_hash": "826abea29aad95411b4d5dc254ce87e19f410a94"
+          }
+        },
+        {
+          "client_id": "76588703845-m6u77hh8oj6m0bptidivnk6n4g4rr49q.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCxH0GGsoWnxWAWYdULNKtfLw8hMDYCoRs"
+        }
+      ],
+      "services": {
+        "analytics_service": {
+          "status": 1
+        },
+        "appinvite_service": {
+          "status": 2,
+          "other_platform_oauth_client": [
+            {
+              "client_id": "76588703845-m6u77hh8oj6m0bptidivnk6n4g4rr49q.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        },
+        "ads_service": {
+          "status": 2
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

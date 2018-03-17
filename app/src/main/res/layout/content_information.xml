@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    app:layout_behavior="@string/appbar_scrolling_view_behavior"
+    tools:context="vn.edu.fpt.idoctor.ui.InformationActivity"
+    tools:showIn="@layout/activity_information">
+
+    <ImageView
+        android:id="@+id/imgBackground"
+        android:layout_width="match_parent"
+        android:layout_height="110dp"
+        android:layout_alignParentStart="true"
+        android:layout_alignParentTop="true"
+        android:scaleType="center"
+        android:src="@color/colorPrimary" />
+
+    <ImageView
+        android:id="@+id/imgAvatar"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentTop="true"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="16dp"
+        android:src="@drawable/hospital" />
+
+    <TextView
+        android:id="@+id/tvName"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/imgAvatar"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="6dp"
+        android:text="Phòng khám ngôi sao"
+        android:textColor="@color/black"
+        android:textSize="25dp" />
+
+    <TextView
+        android:id="@+id/tvRole"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/tvName"
+        android:layout_marginTop="5dp"
+        android:layout_centerHorizontal="true"
+        android:text="Nha khoa"
+        android:textSize="20dp" />
+
+    <ListView
+        android:id="@+id/lstInfo"
+        android:layout_width="300dp"
+        android:layout_height="210dp"
+        android:layout_below="@+id/tvRole"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="5dp"
+        android:paddingVertical="5dp"/>
+
+    <ImageButton
+        android:id="@+id/imgBtnCall"
+        android:layout_width="60dp"
+        android:layout_height="60dp"
+        android:layout_alignParentBottom="true"
+        android:layout_marginBottom="16dp"
+        android:layout_marginEnd="24dp"
+        android:layout_marginLeft="25dp"
+        android:layout_toStartOf="@+id/imgAvatar"
+        android:src="@android:drawable/ic_menu_call" />
+
+    <ImageButton
+        android:id="@+id/imgBtnRedirect"
+        android:layout_width="60dp"
+        android:layout_height="60dp"
+        android:layout_alignBottom="@+id/imgBtnCall"
+        android:layout_centerHorizontal="true"
+        android:src="@android:drawable/ic_menu_directions" />
+
+    <ImageButton
+        android:id="@+id/imgBtnChat"
+        android:layout_width="60dp"
+        android:layout_height="60dp"
+        android:layout_alignBottom="@+id/imgBtnRedirect"
+        android:layout_alignTop="@+id/imgBtnRedirect"
+        android:layout_marginRight="25dp"
+        android:layout_marginStart="22dp"
+        android:layout_toEndOf="@+id/imgAvatar"
+        android:src="@android:drawable/ic_dialog_email" />
+</RelativeLayout>

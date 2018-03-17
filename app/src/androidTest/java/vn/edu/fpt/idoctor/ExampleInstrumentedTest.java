@@ -1,4 +1,4 @@
-package vn.edu.fpt.idoctorapp;
+package vn.edu.fpt.idoctor;
 
 import android.content.Context;
 import android.support.test.InstrumentationRegistry;

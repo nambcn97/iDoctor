@@ -5,22 +5,22 @@ package vn.edu.fpt.idoctor.api.response;
  */
 
 public class BaseResponse {
-    private String code;
-    private String message;
+    private String resultCode;
+    private String resultMsg;
 
-    public String getCode() {
-        return code;
+    public String getResultCode() {
+        return resultCode;
     }
 
-    public void setCode(String code) {
-        this.code = code;
+    public void setResultCode(String resultCode) {
+        this.resultCode = resultCode;
     }
 
-    public String getMessage() {
-        return message;
+    public String getResultMsg() {
+        return resultMsg;
     }
 
-    public void setMessage(String message) {
-        this.message = message;
+    public void setResultMsg(String resultMsg) {
+        this.resultMsg = resultMsg;
     }
 }

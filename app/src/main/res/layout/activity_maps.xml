@@ -5,4 +5,4 @@
     android:name="com.google.android.gms.maps.SupportMapFragment"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context="vn.edu.fpt.idoctorapp.ui.MapsActivity" />
+    tools:context="vn.edu.fpt.idoctor.ui.fragment.MapsActivity" />

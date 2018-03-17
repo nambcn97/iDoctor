@@ -9,6 +9,7 @@ import android.util.Base64;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
+import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.Toast;
 
@@ -35,16 +36,27 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
     private Button btnLogin;
     private EditText edtUsername, edtPassword;
     private String username, password;
+    private CheckBox cbRememberMe;
+    private Boolean rememberMe;
+    private SharedPreferences loginPreferences;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_login);
-
+        loginPreferences = getSharedPreferences(SHARED_LOGIN_PREF, MODE_PRIVATE);
         btnLogin = findViewById(R.id.btnLogin);
         edtUsername = findViewById(R.id.edtUsername);
         edtPassword = findViewById(R.id.edtPassword);
+        cbRememberMe = findViewById(R.id.cbRemember);
+        rememberMe = loginPreferences.getBoolean("rememberMe", false);
+        if (rememberMe) {
+            edtUsername.setText(loginPreferences.getString("username", ""));
+            edtPassword.setText(loginPreferences.getString("password", ""));
+            cbRememberMe.setChecked(true);
+        }
 
+        cbRememberMe.setOnClickListener(this);
         btnLogin.setOnClickListener(this);
     }
 
@@ -63,18 +75,29 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
     private void init() {
         username = edtUsername.getText().toString().trim().toLowerCase();
         password = edtPassword.getText().toString().trim();
+
     }
 
     @Override
     public void onClick(View view) {
+        init();
         switch (view.getId()) {
             case R.id.btnLogin:
-                init();
+
                 if (validate()) {
                     LoginAsyncTask loginAsyncTask = new LoginAsyncTask();
                     loginAsyncTask.execute(username, password);
                 }
                 break;
+            case R.id.cbRemember:
+                if (cbRememberMe.isChecked()) {
+                    loginPreferences.edit().putBoolean("rememberMe", true)
+                            .putString("username", username)
+                            .putString("password", password)
+                            .commit();
+                } else {
+                    loginPreferences.edit().clear().commit();
+                }
         }
     }
 
@@ -92,8 +115,10 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
                 if (response.isSuccessful()) {
                     String accessToken = response.body().getAccess_token();
                     String refreshToken = response.body().getRefresh_token();
-                    SharedPreferences sharedPreferences = getSharedPreferences("idoctor-prefs", MODE_PRIVATE);
-                    sharedPreferences.edit().putString("accessToken", accessToken).putString("refreshToken", refreshToken).commit();
+                    Log.d(DEBUG_TAG, "accessToken: " + accessToken);
+                    Log.d(DEBUG_TAG, "refreshToken: " + refreshToken);
+                    SharedPreferences sharedPreferences = getSharedPreferences(SHARED_PREF_NAME, MODE_PRIVATE);
+                    sharedPreferences.edit().putString(ACCESS_TOKEN, accessToken).putString(REFRESH_TOKEN, refreshToken).commit();
                     Intent intent = new Intent(getApplicationContext(), MainActivity.class);
                     startActivity(intent);
                 } else {
