@@ -1,17 +1,40 @@
-<android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    tools:context="vn.edu.fpt.idoctor.ui.fragment.HomeFragment">
+    android:orientation="vertical"
+    android:layout_height="wrap_content"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    tools:context="vn.edu.fpt.idoctor.ui.fragment.HomeFragment"
+    android:theme="@style/AppTheme.AppBarOverlay">
 
-    <!-- TODO: Update blank fragment layout -->
-    <fragment xmlns:android="http://schemas.android.com/apk/res/android"
-        xmlns:map="http://schemas.android.com/apk/res-auto"
-        xmlns:tools="http://schemas.android.com/tools"
-        android:id="@+id/mapHome"
-        android:name="com.google.android.gms.maps.SupportMapFragment"
+    <android.support.design.widget.TabLayout
+            android:id="@+id/tabs"
+            app:tabMode="fixed"
+            app:tabGravity="fill"
+            app:tabIndicatorColor="#FFA500"
+            app:tabTextColor="#ff33ff"
+            app:tabSelectedTextColor="@color/black"
+            android:layout_width="match_parent"
+
+            android:layout_height="wrap_content"
+
+            >
+
+        </android.support.design.widget.TabLayout>
+
+
+    <android.support.v4.view.ViewPager
+        android:id="@+id/viewpager"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        tools:context="vn.edu.fpt.idoctor.ui.fragment.MapsActivity" />
+        app:layout_behavior="@string/appbar_scrolling_view_behavior" >
 
-</android.support.constraint.ConstraintLayout>
+        <ProgressBar
+            android:id="@+id/progressBar"
+            style="?android:attr/progressBarStyle"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content" />
+    </android.support.v4.view.ViewPager>
+
+
+</LinearLayout>

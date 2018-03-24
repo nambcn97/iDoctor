@@ -5,7 +5,8 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@color/colorPrimary"
-    tools:context="vn.edu.fpt.idoctor.ui.StartActivity">
+    tools:context="vn.edu.fpt.idoctor.ui.StartActivity"
+    >
 
     <ImageView
         android:id="@+id/imageView2"
