@@ -17,12 +17,12 @@ import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 import vn.edu.fpt.idoctor.R;
-import vn.edu.fpt.idoctor.api.common.RetrofitClient;
+import vn.edu.fpt.idoctor.common.RetrofitClient;
 import vn.edu.fpt.idoctor.api.response.PlaceDetailsResponses;
 import vn.edu.fpt.idoctor.api.service.SearchService;
 
-import static vn.edu.fpt.idoctor.api.common.AppConstant.DEBUG_TAG;
-import static vn.edu.fpt.idoctor.api.common.AppConstant.GOOGLE_MAPS_BASE_URL;
+import static vn.edu.fpt.idoctor.common.AppConstant.DEBUG_TAG;
+import static vn.edu.fpt.idoctor.common.AppConstant.GOOGLE_MAPS_BASE_URL;
 
 public class InformationActivity extends AppCompatActivity {
     private ListView lstInfo;

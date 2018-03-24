@@ -1,9 +1,10 @@
-package vn.edu.fpt.idoctor.api.common;
+package vn.edu.fpt.idoctor.common;
 
 
 import android.content.SharedPreferences;
 import android.util.Log;
 
+import static vn.edu.fpt.idoctor.common.AppConstant.*;
 import com.google.firebase.iid.FirebaseInstanceId;
 import com.google.firebase.iid.FirebaseInstanceIdService;
 
@@ -15,8 +16,8 @@ public class MyFirebaseInstanceIDService extends FirebaseInstanceIdService {
     @Override
     public void onTokenRefresh() {
         String instanceId = FirebaseInstanceId.getInstance().getToken();
-        Log.d(AppConstant.DEBUG_TAG, "Refreshed token: " + instanceId);
-        SharedPreferences sharedPreferences = getSharedPreferences("idoctor-prefs", MODE_PRIVATE);
-        sharedPreferences.edit().putString("instanceId", instanceId).commit();
+        Log.d(AppConstant.DEBUG_TAG, "Device ID: " + instanceId);
+        SharedPreferences sharedPreferences = getSharedPreferences(SHARED_PREF, MODE_PRIVATE);
+        sharedPreferences.edit().putString(DEVICE_ID, instanceId).commit();
     }
 }

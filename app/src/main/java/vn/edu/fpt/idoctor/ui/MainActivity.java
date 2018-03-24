@@ -1,12 +1,13 @@
 package vn.edu.fpt.idoctor.ui;
 
 
-
+import android.Manifest;
 import android.content.SharedPreferences;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
 import android.support.design.widget.NavigationView;
+import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v4.view.GravityCompat;
@@ -20,32 +21,48 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 
+import com.google.android.gms.maps.model.BitmapDescriptorFactory;
+import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.Marker;
+import com.google.android.gms.maps.model.MarkerOptions;
+
+import java.io.Serializable;
 import java.util.HashMap;
+import java.util.List;
 
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 import vn.edu.fpt.idoctor.R;
-import vn.edu.fpt.idoctor.api.common.RetrofitClient;
+import vn.edu.fpt.idoctor.api.model.User;
+import vn.edu.fpt.idoctor.api.response.FindDoctorResponse;
+import vn.edu.fpt.idoctor.api.response.PlaceSearchResponse;
+import vn.edu.fpt.idoctor.api.service.SearchService;
+import vn.edu.fpt.idoctor.common.GPSTracker;
+import vn.edu.fpt.idoctor.common.RetrofitClient;
 import vn.edu.fpt.idoctor.api.response.BaseResponse;
 import vn.edu.fpt.idoctor.api.service.NotificationService;
 import vn.edu.fpt.idoctor.ui.fragment.ChatHistoryFragment;
 import vn.edu.fpt.idoctor.ui.fragment.FindFragment;
 import vn.edu.fpt.idoctor.ui.fragment.HomeFragment;
+import vn.edu.fpt.idoctor.ui.fragment.MapTabFragment;
 import vn.edu.fpt.idoctor.ui.fragment.NotificationFragment;
 
-import static vn.edu.fpt.idoctor.api.common.AppConstant.*;
-public class MainActivity extends AppCompatActivity
-        /*implements NavigationView.OnNavigationItemSelectedListener */{
+import static vn.edu.fpt.idoctor.common.AppConstant.*;
 
+public class MainActivity extends AppCompatActivity
+        /*implements NavigationView.OnNavigationItemSelectedListener */ {
+
+    private double myLat, myLng;
     private NavigationView navigationView;
     private DrawerLayout drawer;
     private View navHeader;
     private ImageView imgNavHeaderBg, imgProfile;
     private TextView tvName, tvRole;
     private Toolbar toolbar;
-//    private FloatingActionButton fab;
+    //    private FloatingActionButton fab;
     // index to identify current nav menu item
     public static int navItemIndex = 0;
 
@@ -65,13 +82,15 @@ public class MainActivity extends AppCompatActivity
     private Handler mHandler;
     private SharedPreferences sharedPreferences;
     private String accessToken;
+    private List<PlaceSearchResponse.Result> listPlace;
+    private List<User> listDoctor;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        sharedPreferences = getSharedPreferences(SHARED_PREF_NAME, MODE_PRIVATE);
-        accessToken = sharedPreferences.getString(ACCESS_TOKEN,"");
+        sharedPreferences = getSharedPreferences(SHARED_PREF, MODE_PRIVATE);
+        accessToken = sharedPreferences.getString(ACCESS_TOKEN, "");
         SendDataTask sendDataTask = new SendDataTask();
         sendDataTask.execute();
 
@@ -107,10 +126,12 @@ public class MainActivity extends AppCompatActivity
         }
     }
 
-    private void sendDeviceIdToServer(){
-        String deviceId = sharedPreferences.getString(INSTANCE_ID, "");
+
+    private void sendDeviceIdToServer() {
+        String deviceId = sharedPreferences.getString(DEVICE_ID, "");
         HashMap<String, String> body = new HashMap<>();
         body.put("deviceId", deviceId);
+        Log.d(DEBUG_TAG, "deviceId: " + deviceId);
         NotificationService notificationService = RetrofitClient.getClient(API_HOST).create(NotificationService.class);
         String authorization = String.format("Bearer %s", accessToken).trim();
         Call<BaseResponse> call = notificationService.registerDeviceId(authorization, body);
@@ -118,9 +139,9 @@ public class MainActivity extends AppCompatActivity
             @Override
             public void onResponse(Call<BaseResponse> call, Response<BaseResponse> response) {
                 if (response.isSuccessful()) {
-                    Log.d(DEBUG_TAG,"Send deviceID successfully!!!");
+                    Log.d(DEBUG_TAG, "Send deviceID successfully!!! ");
                 } else {
-                    Log.d(DEBUG_TAG, "Send deviceID: "+ response.code() + " - " + response.body().getResultCode() + " - " + response.body().getResultMsg());
+                    Log.d(DEBUG_TAG, "Send deviceID: " + response.code() + " - " + response.body().getResultCode() + " - " + response.body().getResultMsg());
                 }
             }
 
@@ -128,7 +149,7 @@ public class MainActivity extends AppCompatActivity
             public void onFailure(Call<BaseResponse> call, Throwable t) {
                 Log.d(DEBUG_TAG, "Send deviceID: " + t.getMessage());
                 t.printStackTrace();
-                }
+            }
         });
 
     }
@@ -214,6 +235,7 @@ public class MainActivity extends AppCompatActivity
         invalidateOptionsMenu();
     }
 
+
     private Fragment getHomeFragment() {
         switch (navItemIndex) {
             case 0:
@@ -232,15 +254,23 @@ public class MainActivity extends AppCompatActivity
                 // notifications fragment
                 NotificationFragment notificationFragment = new NotificationFragment();
                 return notificationFragment;
-
+//            case 4:
+//                break;
+//            case 5:
+//                getMyLatLng();
+//                break;
 //            case 4:
 //                // settings fragment
 //                SettingsFragment settingsFragment = new SettingsFragment();
 //                return settingsFragment;
             default:
-                return new HomeFragment();
+                // home
+                homeFragment = new HomeFragment();
+                return homeFragment;
         }
     }
+
+
 
     private void setToolbarTitle() {
         getSupportActionBar().setTitle(activityTitles[navItemIndex]);
@@ -390,22 +420,12 @@ public class MainActivity extends AppCompatActivity
     }
 
 
-
 //    @Override
 //    protected void onCreate(Bundle savedInstanceState) {
 //        super.onCreate(savedInstanceState);
 //        setContentView(R.layout.activity_main);
 //        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
 //        setSupportActionBar(toolbar);
-//
-////        FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
-////        fab.setOnClickListener(new View.OnClickListener() {
-////            @Override
-////            public void onClick(View view) {
-////                Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
-////                        .setAction("Action", null).show();
-////            }
-////        });
 //
 //        DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
 //        ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
@@ -483,4 +503,5 @@ public class MainActivity extends AppCompatActivity
             return null;
         }
     }
+
 }

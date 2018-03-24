@@ -35,6 +35,7 @@ public class StartActivity extends AppCompatActivity implements View.OnClickList
             case R.id.btnRegister:
                 break;
             case R.id.btnEmergency:
+
                 break;
         }
     }

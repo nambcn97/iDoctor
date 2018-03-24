@@ -2,13 +2,14 @@ package vn.edu.fpt.idoctor.api.response;
 
 import android.util.Log;
 
+import java.io.Serializable;
 import java.util.List;
 
 /**
  * Created by NamBC on 3/16/2018.
  */
 
-public class PlaceSearchResponse {
+public class PlaceSearchResponse implements Serializable {
 
     private List<Result> results;
     private String status;
@@ -29,7 +30,7 @@ public class PlaceSearchResponse {
         this.status = status;
     }
 
-    public class Result {
+    public class Result implements Serializable {
         private Geometry geometry;
         private String icon;
         private String id;
@@ -104,7 +105,7 @@ public class PlaceSearchResponse {
             this.vicinity = vicinity;
         }
 
-        public class Geometry {
+        public class Geometry implements Serializable {
             private Location location;
 
             public Location getLocation() {
@@ -115,7 +116,7 @@ public class PlaceSearchResponse {
                 this.location = location;
             }
 
-            public class Location {
+            public class Location implements Serializable {
                 private Double lat;
                 private Double lng;
 
@@ -138,7 +139,7 @@ public class PlaceSearchResponse {
 
         }
 
-        public class OpeningHour {
+        public class OpeningHour implements Serializable {
             private Boolean open_now;
 
             public Boolean getOpen_now() {
@@ -150,7 +151,7 @@ public class PlaceSearchResponse {
             }
         }
 
-        public class Photo {
+        public class Photo implements Serializable {
             public Long height;
             public String photo_reference;
             public Long width;

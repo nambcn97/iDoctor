@@ -4,7 +4,7 @@ android {
     compileSdkVersion 26
     defaultConfig {
         applicationId "vn.edu.fpt.idoctor"
-        minSdkVersion 19
+        minSdkVersion 21
         targetSdkVersion 26
         versionCode 1
         versionName "1.0"
@@ -39,6 +39,7 @@ dependencies {
 
     compile 'com.google.firebase:firebase-core:11.8.0'
     compile 'com.google.firebase:firebase-messaging:11.8.0'
+//    compile 'com.github.Todd-Davies:ProgressWheel:1.2'
 
 }
 apply plugin: 'com.google.gms.google-services'

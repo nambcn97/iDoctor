@@ -17,4 +17,7 @@ public interface NotificationService {
     @POST("/mobile/registerDeviceId")
     public Call<BaseResponse> registerDeviceId(@Header("Authorization") String auth, @Body HashMap<String, String> json);
 
+    @POST("/get/sendEmergency")
+    public Call sendEmergency();
+
 }

@@ -1,10 +1,12 @@
 package vn.edu.fpt.idoctor.api.model;
 
+import java.io.Serializable;
+
 /**
  * Created by NamBC on 3/10/2018.
  */
 
-public class User {
+public class User implements Serializable {
     private Long id;
     private String username;
     private String fullName;

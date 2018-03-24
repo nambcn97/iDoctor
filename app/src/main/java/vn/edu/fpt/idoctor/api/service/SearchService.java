@@ -8,7 +8,7 @@ import retrofit2.http.GET;
 import retrofit2.http.Header;
 import retrofit2.http.POST;
 import retrofit2.http.Query;
-import vn.edu.fpt.idoctor.api.common.AppConstant;
+import vn.edu.fpt.idoctor.common.AppConstant;
 import vn.edu.fpt.idoctor.api.response.PlaceSearchResponse;
 import vn.edu.fpt.idoctor.api.response.FindDoctorResponse;
 import vn.edu.fpt.idoctor.api.response.PlaceDetailsResponses;

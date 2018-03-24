@@ -1,4 +1,4 @@
-package vn.edu.fpt.idoctor.api.common;
+package vn.edu.fpt.idoctor.common;
 
 import retrofit2.Retrofit;
 import retrofit2.converter.gson.GsonConverterFactory;
