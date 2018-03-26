@@ -93,7 +93,7 @@
         android:layout_below="@+id/cbRemember"
         android:layout_centerHorizontal="true"
         android:layout_marginTop="35dp"
-        android:background="@drawable/buttonshape"
+        android:background="@drawable/buttonshape_white"
         android:fontFamily="font/Roboto_Regular"
         android:text="Đăng nhập"
         android:textColor="#2E92FF"

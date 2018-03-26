@@ -68,7 +68,9 @@
         <activity
             android:name=".TabActivity"
             android:label="@string/title_activity_tab"
-            android:theme="@style/AppTheme.NoActionBar"></activity>
+            android:theme="@style/AppTheme.NoActionBar" />
+        <activity android:name=".ui.EmergencyActivity" />
+        <activity android:name=".ui.AnonymousHomeActivity"></activity>
     </application>
 
 </manifest>
