@@ -1,10 +1,15 @@
 package vn.edu.fpt.idoctor.ui;
 
 import android.Manifest;
+import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
+import android.net.ConnectivityManager;
 import android.os.AsyncTask;
+import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
@@ -25,6 +30,7 @@ import static vn.edu.fpt.idoctor.common.AppConstant.*;
 //import com.android.volley.toolbox.JsonObjectRequest;
 //import com.android.volley.toolbox.Volley;
 
+import java.net.InetAddress;
 import java.util.HashMap;
 
 import okhttp3.Credentials;
@@ -32,14 +38,12 @@ import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 import vn.edu.fpt.idoctor.R;
-import vn.edu.fpt.idoctor.common.APIError;
-import vn.edu.fpt.idoctor.common.ErrorUtils;
 import vn.edu.fpt.idoctor.api.response.LoginResponse;
 import vn.edu.fpt.idoctor.api.service.AuthService;
 import vn.edu.fpt.idoctor.common.GPSTracker;
 import vn.edu.fpt.idoctor.common.ServiceGenerator;
 
-public class LoginActivity extends AppCompatActivity implements View.OnClickListener {
+public class LoginActivity extends AppCompatActivity implements View.OnClickListener, ActivityCompat.OnRequestPermissionsResultCallback {
     private Button btnLogin;
     private EditText edtUsername, edtPassword;
     private String username, password;
@@ -48,6 +52,7 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
     private SharedPreferences sharedPreferences;
     private ProgressBar progressBar;
     private Window window;
+    private boolean permissionGranted;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -89,6 +94,7 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
 
     }
 
+
     private Boolean getMyLatLng() {
         GPSTracker gps = new GPSTracker(LoginActivity.this);
         // check if GPS enabled
@@ -97,8 +103,61 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
         } else {
             // can't get location// GPS or Network is not enabled// Ask user to enable GPS/network in settings
             gps.showSettingsAlert();
-            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, PERMISSIONS_REQUEST_ACCESS_FINE_LOCATION);
+//                ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, PERMISSIONS_REQUEST_ACCESS_FINE_LOCATION);
             return false;
+        }
+    }
+
+    private void checkRememberMe() {
+        if (cbRememberMe.isChecked()) {
+            sharedPreferences.edit()
+                    .putBoolean(REMEMBER_ME, true)
+                    .putString(USERNAME, username)
+                    .putString(PASSWORD, password)
+                    .commit();
+        } else {
+            sharedPreferences.edit()
+                    .remove(REMEMBER_ME)
+                    .remove(USERNAME)
+                    .remove(PASSWORD)
+                    .commit();
+        }
+    }
+
+    private boolean getLocationPermission() {
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, PERMISSIONS_REQUEST_ACCESS_FINE_LOCATION);
+        } else {
+            return getMyLatLng();
+        }
+        return false;
+    }
+
+    public boolean isNetworkAvailable(Context context) {
+        final ConnectivityManager connectivityManager = ((ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE));
+        return connectivityManager.getActiveNetworkInfo() != null && connectivityManager.getActiveNetworkInfo().isConnected();
+    }
+
+    public boolean isInternetAvailable() {
+        try {
+            InetAddress ipAddr = InetAddress.getByName("www.google.com");
+            //You can replace it with your name
+            return !ipAddr.equals("");
+
+        } catch (Exception e) {
+            return false;
+        }
+    }
+
+    private void login() {
+        checkRememberMe();
+        if (!isNetworkAvailable(this) /*|| !isInternetAvailable()*/) {
+            Toast.makeText(this, "Kết nối mạng không ổn định", Toast.LENGTH_LONG).show();
+            return;
+        }
+        if (validate()) {
+            LoginAsyncTask loginAsyncTask = new LoginAsyncTask();
+            loginAsyncTask.execute(username, password);
         }
     }
 
@@ -107,25 +166,12 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
         init();
         switch (view.getId()) {
             case R.id.btnLogin:
-                if (getMyLatLng() && validate()) {
-                    LoginAsyncTask loginAsyncTask = new LoginAsyncTask();
-                    loginAsyncTask.execute(username, password);
+                if (getLocationPermission()) {
+                    login();
                 }
                 break;
             case R.id.cbRemember:
-                if (cbRememberMe.isChecked()) {
-                    sharedPreferences.edit()
-                            .putBoolean(REMEMBER_ME, true)
-                            .putString(USERNAME, username)
-                            .putString(PASSWORD, password)
-                            .commit();
-                } else {
-                    sharedPreferences.edit()
-                            .remove(REMEMBER_ME)
-                            .remove(USERNAME)
-                            .remove(PASSWORD)
-                            .commit();
-                }
+                checkRememberMe();
         }
     }
 
@@ -188,6 +234,19 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
         @Override
         protected void onPostExecute(Void success) {
 
+        }
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        switch (requestCode) {
+            case PERMISSIONS_REQUEST_ACCESS_FINE_LOCATION:
+                if (grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                    login();
+                } else {
+                    Toast.makeText(this, "Permission denied!", Toast.LENGTH_SHORT).show();
+                }
+                break;
         }
     }
 }

@@ -1,27 +1,22 @@
 package vn.edu.fpt.idoctor.ui.fragment;
 
 
-import android.Manifest;
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.location.Location;
-import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
-import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.Fragment;
-import android.support.v4.content.ContextCompat;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Toast;
 
+import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.LocationSource;
@@ -32,29 +27,18 @@ import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 
-import java.io.IOException;
 import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 
-import retrofit2.Call;
-import retrofit2.Callback;
-import retrofit2.Response;
 import vn.edu.fpt.idoctor.R;
 
 import static vn.edu.fpt.idoctor.common.AppConstant.*;
 
-import vn.edu.fpt.idoctor.common.APIError;
-import vn.edu.fpt.idoctor.common.ErrorUtils;
 import vn.edu.fpt.idoctor.common.GPSTracker;
-import vn.edu.fpt.idoctor.common.RetrofitClient;
 import vn.edu.fpt.idoctor.api.response.PlaceSearchResponse;
 import vn.edu.fpt.idoctor.api.model.User;
-import vn.edu.fpt.idoctor.api.response.FindDoctorResponse;
-import vn.edu.fpt.idoctor.api.service.SearchService;
 import vn.edu.fpt.idoctor.ui.InformationActivity;
-import vn.edu.fpt.idoctor.ui.MainActivity;
 
 
 /**
@@ -69,6 +53,7 @@ public class MapTabFragment extends Fragment implements OnMapReadyCallback, Goog
     private String accessToken;
     private List<PlaceSearchResponse.Result> listPlace;
     private List<User> listDoctor;
+    private GoogleApiClient googleApiClient;
 
     public MapTabFragment() {
         // Required empty public constructor
@@ -77,11 +62,10 @@ public class MapTabFragment extends Fragment implements OnMapReadyCallback, Goog
     @Override
     public void onStart() {
         super.onStart();
-
     }
 
     private Boolean getMyLatLng() {
-        gps = new GPSTracker(this.getActivity().getApplicationContext());
+        gps = new GPSTracker(getContext());
         // check if GPS enabled
         if (gps.canGetLocation()) {
 
@@ -90,8 +74,19 @@ public class MapTabFragment extends Fragment implements OnMapReadyCallback, Goog
             return true;
         } else {
             // can't get location// GPS or Network is not enabled// Ask user to enable GPS/network in settings
-            ActivityCompat.requestPermissions(getActivity(), new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, PERMISSIONS_REQUEST_ACCESS_FINE_LOCATION);
+//            ActivityCompat.requestPermissions(getActivity(), new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, PERMISSIONS_REQUEST_ACCESS_FINE_LOCATION);
             return false;
+        }
+    }
+
+    public void addMarker(List<PlaceSearchResponse.Result> listPlace, List<User> listDoctor) {
+        Log.d(DEBUG_TAG, "addMarker");
+        this.listPlace = listPlace;
+        this.listDoctor = listDoctor;
+        if (mMap != null) {
+            addMyMarker(myLat, myLng);
+            addDoctorMarker();
+            addPlaceMarker();
         }
     }
 
@@ -100,22 +95,15 @@ public class MapTabFragment extends Fragment implements OnMapReadyCallback, Goog
         super.onCreate(savedInstanceState);
         sharedPreferences = getActivity().getSharedPreferences(SHARED_PREF, Context.MODE_PRIVATE);
         accessToken = sharedPreferences.getString(ACCESS_TOKEN, "");
-        listPlace = (List<PlaceSearchResponse.Result>) getArguments().getSerializable("listPlace");
-        listDoctor = (List<User>) getArguments().getSerializable("listDoctor");
-
+        getMyLatLng();
     }
 
-    private void getLocationPermission() {
-        if (ContextCompat.checkSelfPermission(getContext(), Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
-        } else {
-            ActivityCompat.requestPermissions(getActivity(), new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, PERMISSIONS_REQUEST_ACCESS_FINE_LOCATION);
-        }
-    }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
+        Log.d(DEBUG_TAG, "maptab onCreateView");
         View fragmentHome = inflater.inflate(R.layout.fragment_map_tab, container, false);
         SupportMapFragment mapFragment = (SupportMapFragment) getChildFragmentManager().findFragmentById(R.id.mapHome);
         mapFragment.getMapAsync(this);
@@ -125,26 +113,24 @@ public class MapTabFragment extends Fragment implements OnMapReadyCallback, Goog
     @Override
     public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-
+        Log.d(DEBUG_TAG, "maptab onviewCreated");
     }
 
 
     @SuppressLint("MissingPermission")
     @Override
     public void onMapReady(GoogleMap googleMap) {
+        Log.d(DEBUG_TAG, "OnMapReady");
         mMap = googleMap;
-        mMap.clear();
         mMap.setOnMarkerClickListener(this);
         mMap.setMyLocationEnabled(true);
         mMap.getUiSettings().setMyLocationButtonEnabled(true);
         mMap.getUiSettings().setAllGesturesEnabled(true);
         mMap.getUiSettings().setMapToolbarEnabled(true);
         mMap.getUiSettings().setCompassEnabled(true);
-        if (getMyLatLng()) {
-            addMyMarker(myLat, myLng);
-            addDoctorMarker();
-            addPlaceMarker();
-        }
+        addMyMarker(myLat, myLng);
+        addDoctorMarker();
+        addPlaceMarker();
 
     }
 

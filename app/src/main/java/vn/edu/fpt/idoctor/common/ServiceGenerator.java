@@ -1,6 +1,10 @@
 package vn.edu.fpt.idoctor.common;
 
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+
 import java.io.IOException;
+import java.util.Date;
 import java.util.concurrent.TimeUnit;
 
 import okhttp3.Interceptor;
@@ -23,9 +27,13 @@ public class ServiceGenerator {
             .connectTimeout(60, TimeUnit.SECONDS)
             .build();
 
+    private static GsonBuilder gsonBuilder = new GsonBuilder().registerTypeAdapter(Date.class, new DateDeserializer());
+    private static Gson gson = new GsonBuilder()
+            .setDateFormat("yyyy-MM-dd'T'HH:mm:ss")
+            .create();
     private static Retrofit.Builder builder =
             new Retrofit.Builder()
-                    .addConverterFactory(GsonConverterFactory.create())
+                    .addConverterFactory(GsonConverterFactory.create(gson))
                     .baseUrl(apiBaseUrl);
 
     public static Retrofit retrofit(){

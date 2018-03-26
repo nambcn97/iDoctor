@@ -79,7 +79,7 @@ public class InformationActivity extends AppCompatActivity {
 
             @Override
             public void onFailure(Call<PlaceDetailsResponses> call, Throwable t) {
-                Log.d(DEBUG_TAG, "search hospital: " + t.getMessage());
+                Log.d(DEBUG_TAG, "place detail: " + t.getMessage());
                 t.printStackTrace();
             }
         });

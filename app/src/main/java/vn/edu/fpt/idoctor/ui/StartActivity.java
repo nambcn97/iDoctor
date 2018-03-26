@@ -1,5 +1,6 @@
 package vn.edu.fpt.idoctor.ui;
 
+import android.app.DialogFragment;
 import android.content.Intent;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -7,6 +8,7 @@ import android.view.View;
 import android.widget.Button;
 
 import vn.edu.fpt.idoctor.R;
+import vn.edu.fpt.idoctor.ui.fragment.InputPhoneDialogFragment;
 
 public class StartActivity extends AppCompatActivity implements View.OnClickListener {
     private Button btnLogin, btnRegister, btnEmergency;
@@ -35,7 +37,9 @@ public class StartActivity extends AppCompatActivity implements View.OnClickList
             case R.id.btnRegister:
                 break;
             case R.id.btnEmergency:
-
+                InputPhoneDialogFragment inputPhoneDialogFragment = new InputPhoneDialogFragment();
+                inputPhoneDialogFragment.setStyle(DialogFragment.STYLE_NO_TITLE, 0);
+                inputPhoneDialogFragment.show(getSupportFragmentManager(), "input phone dialog");
                 break;
         }
     }

@@ -20,8 +20,12 @@ import android.view.ViewGroup;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import java.io.IOException;
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
@@ -29,17 +33,22 @@ import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 import vn.edu.fpt.idoctor.R;
+import vn.edu.fpt.idoctor.api.model.EmergencyBean;
 import vn.edu.fpt.idoctor.api.model.User;
 import vn.edu.fpt.idoctor.api.response.FindDoctorResponse;
 import vn.edu.fpt.idoctor.api.response.PlaceSearchResponse;
+import vn.edu.fpt.idoctor.api.response.SendEmergencyResponse;
+import vn.edu.fpt.idoctor.api.service.EmergencyService;
 import vn.edu.fpt.idoctor.api.service.SearchService;
 import vn.edu.fpt.idoctor.common.GPSTracker;
 import vn.edu.fpt.idoctor.common.RetrofitClient;
+import vn.edu.fpt.idoctor.common.ServiceGenerator;
 import vn.edu.fpt.idoctor.ui.MainActivity;
 
 import static vn.edu.fpt.idoctor.common.AppConstant.ACCESS_TOKEN;
 import static vn.edu.fpt.idoctor.common.AppConstant.API_HOST;
 import static vn.edu.fpt.idoctor.common.AppConstant.DEBUG_TAG;
+import static vn.edu.fpt.idoctor.common.AppConstant.DEVICE_ID;
 import static vn.edu.fpt.idoctor.common.AppConstant.GOOGLE_MAPS_BASE_URL;
 import static vn.edu.fpt.idoctor.common.AppConstant.PERMISSIONS_REQUEST_ACCESS_FINE_LOCATION;
 import static vn.edu.fpt.idoctor.common.AppConstant.SHARED_PREF;
@@ -61,8 +70,11 @@ public class HomeFragment extends Fragment {
     private double myLat, myLng;
     private SharedPreferences sharedPreferences;
     private String accessToken;
-    private ProgressBar progressBar;
     private LoadingDialogFragment loadingDialogFragment;
+    private MapTabFragment mapTabFragment;
+    private ListDoctorTabFragment listDoctorTabFragment;
+    private String deviceId;
+
     public HomeFragment() {
         // Required empty public constructor
     }
@@ -72,17 +84,21 @@ public class HomeFragment extends Fragment {
         super.onCreate(savedInstanceState);
         sharedPreferences = getActivity().getSharedPreferences(SHARED_PREF, Context.MODE_PRIVATE);
         accessToken = sharedPreferences.getString(ACCESS_TOKEN, "");
+        deviceId = sharedPreferences.getString(DEVICE_ID, "");
+        Log.d(DEBUG_TAG, accessToken);
+        Log.d(DEBUG_TAG, "DeviceID: " + deviceId);
     }
 
-    @Override
-    public void onStart() {
-        super.onStart();
-
-    }
 
     @Override
     public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
-        super.onViewCreated(view, savedInstanceState);
+        Log.d(DEBUG_TAG, "home on view created");
+        if (!getMyLatLng()) {
+            LocationErrorFragment locationErrorDialog = new LocationErrorFragment();
+            locationErrorDialog.show(getFragmentManager(), "locationErrorDialog");
+        } else {
+            searchNearby();
+        }
     }
 
     @Override
@@ -92,20 +108,54 @@ public class HomeFragment extends Fragment {
         View view = inflater.inflate(R.layout.fragment_home, null);
         tabLayout = view.findViewById(R.id.tabs);
         viewPager = view.findViewById(R.id.viewpager);
+        Log.d(DEBUG_TAG, "home on create view");
 
-        if (!getMyLatLng()) {
-            LocationErrorFragment locationErrorDialog = new LocationErrorFragment();
-            locationErrorDialog.show(getFragmentManager(),"locationErrorDialog");
-            return view;
-        } else {
-            searchNearby();
-        }
+        viewPager.setAdapter(new FragmentPagerAdapter(getChildFragmentManager()) {
+            @Override
+            public Fragment getItem(int position) {
+                Log.d(DEBUG_TAG, "home on getItem");
+                switch (position) {
+                    case TAB_MAP:
+                        mapTabFragment = new MapTabFragment();
+                        return mapTabFragment;
+
+                    case TAB_LIST:
+                        listDoctorTabFragment = new ListDoctorTabFragment();
+                        return listDoctorTabFragment;
+
+                }
+                return new MapTabFragment();
+            }
+
+            @Override
+            public int getCount() {
+                return 2;
+            }
+
+            @Override
+            public CharSequence getPageTitle(int position) {
+                switch (position) {
+                    case TAB_MAP:
+                        return TAB_MAP_TITLE;
+                    case TAB_LIST:
+                        return TAB_LIST_TITLE;
+                }
+                return TAB_MAP_TITLE;
+            }
+        });
+
+        tabLayout.post(new Runnable() {
+            @Override
+            public void run() {
+                tabLayout.setupWithViewPager(viewPager);
+            }
+        });
 
         return view;
     }
 
     private Boolean getMyLatLng() {
-        gps = new GPSTracker(this.getActivity().getApplicationContext());
+        gps = new GPSTracker(getContext());
         // check if GPS enabled
         if (gps.canGetLocation()) {
 
@@ -114,7 +164,8 @@ public class HomeFragment extends Fragment {
             return true;
         } else {
             // can't get location// GPS or Network is not enabled// Ask user to enable GPS/network in settings
-            ActivityCompat.requestPermissions(getActivity(), new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, PERMISSIONS_REQUEST_ACCESS_FINE_LOCATION);
+//            gps.showSettingsAlert();
+//            ActivityCompat.requestPermissions(getActivity(), new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, PERMISSIONS_REQUEST_ACCESS_FINE_LOCATION);
             return false;
         }
     }
@@ -122,6 +173,47 @@ public class HomeFragment extends Fragment {
     public void searchNearby() {
         SearchNearbyTask searchHospitalNearbyTask = new SearchNearbyTask();
         searchHospitalNearbyTask.execute(myLat, myLng);
+    }
+
+    public void searchAndSendEmergency() {
+        Call<SendEmergencyResponse> call;
+        HashMap<String, Object> body = new HashMap<>();
+        body.put("lat", myLat);
+        body.put("lng", myLng);
+        body.put("radius", 3000);
+        body.put("deviceId", deviceId);
+        if (accessToken.isEmpty()) {
+            String phone = getArguments().getString("phone");
+            body.put("phone", phone);
+            body.put("loggedIn", false);
+            EmergencyService emergencyService = ServiceGenerator.createService(EmergencyService.class, API_HOST);
+            call = emergencyService.sendEmergencyAnonymous(body);
+        } else {
+            body.put("loggedIn", true);
+            String header = String.format("Bearer %s", accessToken).trim();
+            EmergencyService emergencyService = ServiceGenerator.createService(EmergencyService.class, API_HOST);
+            call = emergencyService.sendEmergencyUser(header, body);
+        }
+        try {
+            Response<SendEmergencyResponse> response = call.execute();
+            Log.d(DEBUG_TAG, "sendNoti: " + response.code());
+            if (response.isSuccessful()) {
+
+                SendEmergencyResponse responseBody = response.body();
+                List<EmergencyBean> emergencyBeans = responseBody.getEmergencies();
+                List<User> sendedDoctor = new ArrayList<>();
+                for (int i = 0; i < emergencyBeans.size(); i++) {
+                    sendedDoctor.add(emergencyBeans.get(i).getToUser());
+                }
+                listDoctor = sendedDoctor;
+                Log.d(DEBUG_TAG, "sendNoti: result - " + emergencyBeans.size());
+            } else {
+                Log.d(DEBUG_TAG, "sendNoti: " + response.errorBody().string());
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+            Log.d(DEBUG_TAG, "sendNoti: " + e.getMessage());
+        }
     }
 
 
@@ -149,7 +241,7 @@ public class HomeFragment extends Fragment {
         HashMap<String, String> body = new HashMap<>();
         body.put("lat", lat + "");
         body.put("lng", lng + "");
-        body.put("radius", 500 + "");
+        body.put("radius", 3000 + "");
         SearchService searchService = RetrofitClient.getClient(API_HOST).create(SearchService.class);
         String authorization = String.format("Bearer %s", accessToken).trim();
         Call<FindDoctorResponse> call = searchService.searchDoctor(authorization, body);
@@ -172,72 +264,32 @@ public class HomeFragment extends Fragment {
 
     }
 
+
     public class SearchNearbyTask extends AsyncTask<Double, Void, Void> {
 
         @Override
         protected void onPreExecute() {
             loadingDialogFragment = new LoadingDialogFragment();
-            loadingDialogFragment.show(getFragmentManager(),"loading");
+            loadingDialogFragment.show(getFragmentManager(), "loading");
         }
 
         @Override
         protected Void doInBackground(Double... doubles) {
             searchHospitalNearby(doubles[0], doubles[1]);
-            searchDoctorNearby(doubles[0], doubles[1]);
+            if (accessToken.isEmpty()) {
+                searchAndSendEmergency();
+            } else {
+                searchDoctorNearby(doubles[0], doubles[1]);
+            }
             return null;
         }
 
         @Override
         protected void onPostExecute(Void aVoid) {
             loadingDialogFragment.dismiss();
-            viewPager.setAdapter(new FragmentPagerAdapter(getChildFragmentManager()) {
-                @Override
-                public Fragment getItem(int position) {
-
-                    Bundle bundle = new Bundle();
-                    bundle.putSerializable("listPlace", (Serializable) listPlace);
-                    bundle.putSerializable("listDoctor", (Serializable) listDoctor);
-                    switch (position) {
-                        case TAB_MAP:
-                            MapTabFragment mapTabFragment = new MapTabFragment();
-                            mapTabFragment.setArguments(bundle);
-                            return mapTabFragment;
-
-                        case TAB_LIST:
-                            ListDoctorTabFragment listDoctorTabFragment = new ListDoctorTabFragment();
-                            listDoctorTabFragment.setArguments(bundle);
-                            return listDoctorTabFragment;
-
-                    }
-                    return null;
-                }
-
-                @Override
-                public int getCount() {
-                    return 2;
-                }
-
-                @Override
-                public CharSequence getPageTitle(int position) {
-                    switch (position) {
-                        case TAB_MAP:
-                            return TAB_MAP_TITLE;
-                        case TAB_LIST:
-                            return TAB_LIST_TITLE;
-                    }
-                    return null;
-                }
-            });
-
-            tabLayout.post(new Runnable() {
-                @Override
-                public void run() {
-                    tabLayout.setupWithViewPager(viewPager);
-                }
-            });
+            mapTabFragment.addMarker(listPlace, listDoctor);
         }
     }
-
 
 
 }

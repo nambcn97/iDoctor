@@ -2,6 +2,7 @@ package vn.edu.fpt.idoctor.ui;
 
 
 import android.Manifest;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -48,6 +49,7 @@ import vn.edu.fpt.idoctor.ui.fragment.ChatHistoryFragment;
 import vn.edu.fpt.idoctor.ui.fragment.FindFragment;
 import vn.edu.fpt.idoctor.ui.fragment.HomeFragment;
 import vn.edu.fpt.idoctor.ui.fragment.MapTabFragment;
+import vn.edu.fpt.idoctor.ui.fragment.MyAccountFragment;
 import vn.edu.fpt.idoctor.ui.fragment.NotificationFragment;
 
 import static vn.edu.fpt.idoctor.common.AppConstant.*;
@@ -70,6 +72,7 @@ public class MainActivity extends AppCompatActivity
     private static final String TAG_HOME = "home";
     private static final String TAG_FIND = "find";
     private static final String TAG_CHAT = "chat";
+    private static final String TAG_INFO = "info";
     private static final String TAG_NOTIFICATIONS = "notifications";
     private static final String TAG_LOGOUT = "logout";
     public static String CURRENT_TAG = TAG_HOME;
@@ -254,22 +257,17 @@ public class MainActivity extends AppCompatActivity
                 // notifications fragment
                 NotificationFragment notificationFragment = new NotificationFragment();
                 return notificationFragment;
-//            case 4:
-//                break;
-//            case 5:
-//                getMyLatLng();
-//                break;
-//            case 4:
-//                // settings fragment
-//                SettingsFragment settingsFragment = new SettingsFragment();
-//                return settingsFragment;
-            default:
-                // home
-                homeFragment = new HomeFragment();
-                return homeFragment;
-        }
-    }
+            case 4:
+                MyAccountFragment myAccountFragment = new MyAccountFragment();
+                return myAccountFragment;
+            case 5:
+                Intent intent = new Intent(this, StartActivity.class);
+                startActivity(intent);
+                return new HomeFragment();
 
+        }
+        return new HomeFragment();
+    }
 
 
     private void setToolbarTitle() {
@@ -303,12 +301,16 @@ public class MainActivity extends AppCompatActivity
                         navItemIndex = 2;
                         CURRENT_TAG = TAG_CHAT;
                         break;
-                    case R.id.nav_notification:
+                    case R.id.nav_info:
                         navItemIndex = 3;
+                        CURRENT_TAG = TAG_INFO;
+                        break;
+                    case R.id.nav_notification:
+                        navItemIndex = 4;
                         CURRENT_TAG = TAG_NOTIFICATIONS;
                         break;
                     case R.id.nav_logout:
-                        navItemIndex = 4;
+                        navItemIndex = 5;
                         CURRENT_TAG = TAG_LOGOUT;
                         break;
                     default:

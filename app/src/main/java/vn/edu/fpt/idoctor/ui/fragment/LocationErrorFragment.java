@@ -33,7 +33,6 @@ public class LocationErrorFragment extends DialogFragment {
 
         // Setting Dialog Title
         alertDialog.setTitle("GPS is settings");
-
         // Setting Dialog Message
         alertDialog.setMessage("GPS is not enabled. Do you want to go to settings menu?");
 
