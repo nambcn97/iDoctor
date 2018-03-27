@@ -4,6 +4,7 @@
 
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+    <uses-permission android:name="android.permission.CALL_PHONE" />
     <!--
          The ACCESS_COARSE/FINE_LOCATION permissions are not required to use
          Google Maps Android API v2, but you must specify either coarse or fine
@@ -34,7 +35,9 @@
         <activity
             android:name=".ui.LoginActivity"
             android:theme="@style/AppTheme.NoActionBar" />
-        <activity android:name=".ui.RegisterActivity" />
+        <activity
+            android:name=".ui.RegisterActivity"
+            android:theme="@style/AppTheme.NoActionBar" />
         <!--
              The API key for Google Maps-based APIs is defined as a string resource.
              (See the file "res/values/google_maps_api.xml").
@@ -70,7 +73,16 @@
             android:label="@string/title_activity_tab"
             android:theme="@style/AppTheme.NoActionBar" />
         <activity android:name=".ui.EmergencyActivity" />
-        <activity android:name=".ui.AnonymousHomeActivity"></activity>
+        <activity android:name=".ui.AnonymousHomeActivity" />
+        <activity
+            android:name=".ui.PatientRequestMapsActivity"
+            android:label="@string/title_activity_patient_request_maps"
+            android:theme="@style/AppTheme">
+            <intent-filter>
+                <action android:name=".ui.PatientRequestMapsActivity" />
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+        </activity>
     </application>
 
 </manifest>

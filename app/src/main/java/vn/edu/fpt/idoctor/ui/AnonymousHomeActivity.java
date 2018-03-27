@@ -27,6 +27,7 @@ public class AnonymousHomeActivity extends AppCompatActivity {
         HomeFragment homeFragment = new HomeFragment();
         Bundle bundle = new Bundle();
         bundle.putString("phone", intent.getStringExtra("phone"));
+        bundle.putBoolean("isEmergency", true);
         homeFragment.setArguments(bundle);
         FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
         transaction.replace(R.id.anonymousHomeLayout, homeFragment); // give your fragment container id in first parameter

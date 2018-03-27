@@ -8,6 +8,8 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
+import com.afollestad.materialdialogs.MaterialDialog;
+
 import vn.edu.fpt.idoctor.R;
 
 /**
@@ -25,7 +27,12 @@ public class LoadingDialogFragment extends DialogFragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
-        return inflater.inflate(R.layout.fragment_loading_dialog, container, false);
+        return new MaterialDialog.Builder(this.getContext())
+                .title("In Progress")
+                .content("Please wait")
+                .progress(true, 0)
+                .show().getView();
+//        return inflater.inflate(R.layout.fragment_loading_dialog, container, false);
     }
 
 }

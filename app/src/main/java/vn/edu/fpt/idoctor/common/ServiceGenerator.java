@@ -27,7 +27,6 @@ public class ServiceGenerator {
             .connectTimeout(60, TimeUnit.SECONDS)
             .build();
 
-    private static GsonBuilder gsonBuilder = new GsonBuilder().registerTypeAdapter(Date.class, new DateDeserializer());
     private static Gson gson = new GsonBuilder()
             .setDateFormat("yyyy-MM-dd'T'HH:mm:ss")
             .create();

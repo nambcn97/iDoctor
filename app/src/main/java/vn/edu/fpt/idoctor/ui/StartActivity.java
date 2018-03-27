@@ -12,6 +12,7 @@ import vn.edu.fpt.idoctor.ui.fragment.InputPhoneDialogFragment;
 
 public class StartActivity extends AppCompatActivity implements View.OnClickListener {
     private Button btnLogin, btnRegister, btnEmergency;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -29,12 +30,14 @@ public class StartActivity extends AppCompatActivity implements View.OnClickList
     @Override
     public void onClick(View view) {
         Intent intent;
-        switch (view.getId()){
+        switch (view.getId()) {
             case R.id.btnLogin:
-                 intent = new Intent(getApplicationContext(), LoginActivity.class);
-                 startActivity(intent);
+                intent = new Intent(getApplicationContext(), LoginActivity.class);
+                startActivity(intent);
                 break;
             case R.id.btnRegister:
+                intent = new Intent(getApplicationContext(), RegisterActivity.class);
+                startActivity(intent);
                 break;
             case R.id.btnEmergency:
                 InputPhoneDialogFragment inputPhoneDialogFragment = new InputPhoneDialogFragment();

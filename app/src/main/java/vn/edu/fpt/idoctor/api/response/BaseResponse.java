@@ -5,14 +5,14 @@ package vn.edu.fpt.idoctor.api.response;
  */
 
 public class BaseResponse {
-    private String resultCode;
+    private Integer resultCode;
     private String resultMsg;
 
-    public String getResultCode() {
+    public Integer getResultCode() {
         return resultCode;
     }
 
-    public void setResultCode(String resultCode) {
+    public void setResultCode(Integer resultCode) {
         this.resultCode = resultCode;
     }
 

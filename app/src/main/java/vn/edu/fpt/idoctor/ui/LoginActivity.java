@@ -19,7 +19,10 @@ import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.ProgressBar;
+import android.widget.TextView;
 import android.widget.Toast;
+
+import org.w3c.dom.Text;
 
 import static vn.edu.fpt.idoctor.common.AppConstant.*;
 //import com.android.volley.AuthFailureError;
@@ -53,7 +56,7 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
     private ProgressBar progressBar;
     private Window window;
     private boolean permissionGranted;
-
+    private TextView tvReturn;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -63,6 +66,8 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
         edtUsername = findViewById(R.id.edtUsername);
         edtPassword = findViewById(R.id.edtPassword);
         cbRememberMe = findViewById(R.id.cbRemember);
+        tvReturn = findViewById(R.id.tvReturn);
+
         progressBar = findViewById(R.id.progressBar);
         progressBar.setVisibility(View.GONE);
         rememberMe = sharedPreferences.getBoolean(REMEMBER_ME, false);
@@ -74,6 +79,7 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
         window = this.getWindow();
         cbRememberMe.setOnClickListener(this);
         btnLogin.setOnClickListener(this);
+        tvReturn.setOnClickListener(this);
     }
 
     private Boolean validate() {
@@ -172,6 +178,10 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
                 break;
             case R.id.cbRemember:
                 checkRememberMe();
+                break;
+            case R.id.tvReturn:
+                onBackPressed();
+                break;
         }
     }
 

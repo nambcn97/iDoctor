@@ -2,16 +2,24 @@ package vn.edu.fpt.idoctor.ui.fragment;
 
 
 import android.Manifest;
+import android.annotation.SuppressLint;
+import android.app.AlertDialog;
 import android.content.Context;
+import android.content.DialogInterface;
+import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
+import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.provider.Settings;
 import android.support.annotation.Nullable;
 import android.support.design.widget.TabLayout;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentPagerAdapter;
+import android.support.v4.app.FragmentTransaction;
 import android.support.v4.view.ViewPager;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -19,6 +27,8 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ProgressBar;
 import android.widget.TextView;
+
+import com.afollestad.materialdialogs.MaterialDialog;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -44,6 +54,7 @@ import vn.edu.fpt.idoctor.common.GPSTracker;
 import vn.edu.fpt.idoctor.common.RetrofitClient;
 import vn.edu.fpt.idoctor.common.ServiceGenerator;
 import vn.edu.fpt.idoctor.ui.MainActivity;
+import vn.edu.fpt.idoctor.ui.StartActivity;
 
 import static vn.edu.fpt.idoctor.common.AppConstant.ACCESS_TOKEN;
 import static vn.edu.fpt.idoctor.common.AppConstant.API_HOST;
@@ -74,7 +85,8 @@ public class HomeFragment extends Fragment {
     private MapTabFragment mapTabFragment;
     private ListDoctorTabFragment listDoctorTabFragment;
     private String deviceId;
-
+    private MaterialDialog loadingDialog;
+    private Boolean isEmergency;
     public HomeFragment() {
         // Required empty public constructor
     }
@@ -82,6 +94,13 @@ public class HomeFragment extends Fragment {
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        loadingDialog = new MaterialDialog.Builder(getContext())
+                .title("In Progress")
+                .content("Please wait")
+                .progress(true, 0)
+                .show();
+
+        isEmergency = getArguments().getBoolean("isEmergency", false);
         sharedPreferences = getActivity().getSharedPreferences(SHARED_PREF, Context.MODE_PRIVATE);
         accessToken = sharedPreferences.getString(ACCESS_TOKEN, "");
         deviceId = sharedPreferences.getString(DEVICE_ID, "");
@@ -269,14 +288,13 @@ public class HomeFragment extends Fragment {
 
         @Override
         protected void onPreExecute() {
-            loadingDialogFragment = new LoadingDialogFragment();
-            loadingDialogFragment.show(getFragmentManager(), "loading");
+
         }
 
         @Override
         protected Void doInBackground(Double... doubles) {
             searchHospitalNearby(doubles[0], doubles[1]);
-            if (accessToken.isEmpty()) {
+            if (isEmergency) {
                 searchAndSendEmergency();
             } else {
                 searchDoctorNearby(doubles[0], doubles[1]);
@@ -284,12 +302,64 @@ public class HomeFragment extends Fragment {
             return null;
         }
 
+        @SuppressLint("MissingPermission")
+        private void callIntent(){
+            Intent intent = new Intent(Intent.ACTION_CALL, Uri.parse("tel:" + "115"));
+            startActivity(intent);
+        }
+
         @Override
         protected void onPostExecute(Void aVoid) {
-            loadingDialogFragment.dismiss();
+            loadingDialog.dismiss();
             mapTabFragment.addMarker(listPlace, listDoctor);
+            if (isEmergency){
+                AlertDialog.Builder alertDialog = new AlertDialog.Builder(getActivity());
+
+                // Setting Dialog Title
+                alertDialog.setTitle("Gọi cấp cứu");
+                // Setting Dialog Message
+                if (listDoctor == null || listDoctor.size() == 0){
+                    alertDialog.setTitle("Không tìm thấy bác sỹ nào đang trực tuyến gần bạn");
+                    if (accessToken.isEmpty()){
+                        alertDialog.setMessage("Hãy gọi 115 hoặc liên lạc với các bệnh viện lân cận");
+                    } else
+                        alertDialog.setMessage("Hãy gọi 115 hoặc Về trang chủ để liên lạc với các bác sỹ ngoại tuyến và các bệnh viện xung quanh");
+                    alertDialog.setPositiveButton("Gọi 115", new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialogInterface, int i) {
+                            if (ActivityCompat.checkSelfPermission(getContext(), Manifest.permission.CALL_PHONE) != PackageManager.PERMISSION_GRANTED) {
+                                return;
+                            }
+                            callIntent();
+                        }
+                    });
+                    alertDialog.setPositiveButton("Về trang chủ", new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialogInterface, int i) {
+                            if (!accessToken.isEmpty()) refresh();
+                            else {
+                                Intent intent = new Intent();
+
+                            }
+                        }
+                    });
+                }
+                alertDialog.setMessage("");
+
+                // On pressing Settings button
+                alertDialog.setPositiveButton("Settings", new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int which) {
+                        Intent intent = new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS);
+                        getActivity().startActivity(intent);
+                    }
+                });
+            }
         }
     }
 
+    public void refresh(){
+        FragmentTransaction ft = getFragmentManager().beginTransaction();
+        ft.detach(this).attach(this).commit();
+    }
 
 }

@@ -58,31 +58,34 @@
 
     <ImageButton
         android:id="@+id/imgBtnCall"
-        android:layout_width="60dp"
-        android:layout_height="60dp"
+        android:layout_width="50dp"
+        android:layout_height="50dp"
         android:layout_alignParentBottom="true"
         android:layout_marginBottom="16dp"
         android:layout_marginEnd="24dp"
         android:layout_marginLeft="25dp"
         android:layout_toStartOf="@+id/imgAvatar"
+        android:background="@color/colorPrimary"
         android:src="@android:drawable/ic_menu_call" />
 
     <ImageButton
         android:id="@+id/imgBtnRedirect"
-        android:layout_width="60dp"
-        android:layout_height="60dp"
+        android:layout_width="50dp"
+        android:layout_height="50dp"
         android:layout_alignBottom="@+id/imgBtnCall"
         android:layout_centerHorizontal="true"
+        android:background="@color/colorPrimary"
         android:src="@android:drawable/ic_menu_directions" />
 
     <ImageButton
         android:id="@+id/imgBtnChat"
-        android:layout_width="60dp"
-        android:layout_height="60dp"
+        android:layout_width="50dp"
+        android:layout_height="50dp"
         android:layout_alignBottom="@+id/imgBtnRedirect"
         android:layout_alignTop="@+id/imgBtnRedirect"
         android:layout_marginRight="25dp"
         android:layout_marginStart="22dp"
         android:layout_toEndOf="@+id/imgAvatar"
+        android:background="@color/colorPrimary"
         android:src="@android:drawable/ic_dialog_email" />
 </RelativeLayout>

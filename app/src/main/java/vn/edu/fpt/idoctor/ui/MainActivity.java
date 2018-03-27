@@ -144,7 +144,7 @@ public class MainActivity extends AppCompatActivity
                 if (response.isSuccessful()) {
                     Log.d(DEBUG_TAG, "Send deviceID successfully!!! ");
                 } else {
-                    Log.d(DEBUG_TAG, "Send deviceID: " + response.code() + " - " + response.body().getResultCode() + " - " + response.body().getResultMsg());
+                    Log.d(DEBUG_TAG, "Send deviceID: " + response.code() );
                 }
             }
 
@@ -251,8 +251,11 @@ public class MainActivity extends AppCompatActivity
                 return findFragment;
             case 2:
                 // chat history fragment
-                ChatHistoryFragment chatHistoryFragment = new ChatHistoryFragment();
-                return chatHistoryFragment;
+                homeFragment = new HomeFragment();
+                Bundle bundle = new Bundle();
+                bundle.putBoolean("isEmergency",true);
+                homeFragment.setArguments(bundle);
+                return homeFragment;
             case 3:
                 // notifications fragment
                 NotificationFragment notificationFragment = new NotificationFragment();

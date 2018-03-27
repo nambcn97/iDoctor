@@ -17,6 +17,7 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import com.google.android.gms.common.api.GoogleApiClient;
+import com.google.android.gms.location.LocationListener;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.LocationSource;
@@ -44,7 +45,7 @@ import vn.edu.fpt.idoctor.ui.InformationActivity;
 /**
  * A simple {@link Fragment} subclass.
  */
-public class MapTabFragment extends Fragment implements OnMapReadyCallback, GoogleMap.OnMarkerClickListener, LocationSource.OnLocationChangedListener {
+public class MapTabFragment extends Fragment implements OnMapReadyCallback, GoogleMap.OnMarkerClickListener, LocationListener {
     private GoogleMap mMap;
     private Boolean mLocationPermissionGranted;
     private GPSTracker gps;
@@ -68,7 +69,6 @@ public class MapTabFragment extends Fragment implements OnMapReadyCallback, Goog
         gps = new GPSTracker(getContext());
         // check if GPS enabled
         if (gps.canGetLocation()) {
-
             myLat = gps.getLatitude();
             myLng = gps.getLongitude();
             return true;
@@ -208,6 +208,7 @@ public class MapTabFragment extends Fragment implements OnMapReadyCallback, Goog
             infos.add("Số điện thoại: " + doctor.getPhone());
             intent.putExtra("specialty", doctor.getSpecialty());
             intent.putExtra("name", "Bác sỹ " + doctor.getFullName());
+            intent.putExtra("phone", doctor.getPhone());
             intent.putExtra("infos", (Serializable) infos);
             startActivity(intent);
         }
