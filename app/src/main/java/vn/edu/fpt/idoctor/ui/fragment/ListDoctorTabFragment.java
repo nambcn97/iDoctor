@@ -7,14 +7,19 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
+import java.util.List;
+
 import vn.edu.fpt.idoctor.R;
+import vn.edu.fpt.idoctor.api.model.User;
+import vn.edu.fpt.idoctor.api.response.PlaceSearchResponse;
 
 /**
  * A simple {@link Fragment} subclass.
  */
 public class ListDoctorTabFragment extends Fragment {
 
-
+    private List<PlaceSearchResponse.Result> listPlace;
+    private List<User> listDoctor;
     public ListDoctorTabFragment() {
         // Required empty public constructor
     }

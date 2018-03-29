@@ -2,22 +2,34 @@ package vn.edu.fpt.idoctor.ui.fragment;
 
 
 import android.annotation.SuppressLint;
+import android.app.AlertDialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.location.Location;
+import android.os.Build;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.Fragment;
+import android.support.v4.content.ContextCompat;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
+import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.location.LocationListener;
+import com.google.android.gms.location.LocationRequest;
+import com.google.android.gms.location.LocationServices;
+import com.google.android.gms.location.places.GeoDataClient;
+import com.google.android.gms.location.places.Places;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.LocationSource;
@@ -40,12 +52,14 @@ import vn.edu.fpt.idoctor.common.GPSTracker;
 import vn.edu.fpt.idoctor.api.response.PlaceSearchResponse;
 import vn.edu.fpt.idoctor.api.model.User;
 import vn.edu.fpt.idoctor.ui.InformationActivity;
+import vn.edu.fpt.idoctor.ui.PatientRequestMapsActivity;
 
 
 /**
  * A simple {@link Fragment} subclass.
  */
-public class MapTabFragment extends Fragment implements OnMapReadyCallback, GoogleMap.OnMarkerClickListener, LocationListener {
+public class MapTabFragment extends Fragment implements OnMapReadyCallback, GoogleMap.OnMarkerClickListener, LocationListener, GoogleApiClient.ConnectionCallbacks,
+        GoogleApiClient.OnConnectionFailedListener {
     private GoogleMap mMap;
     private Boolean mLocationPermissionGranted;
     private GPSTracker gps;
@@ -54,7 +68,10 @@ public class MapTabFragment extends Fragment implements OnMapReadyCallback, Goog
     private String accessToken;
     private List<PlaceSearchResponse.Result> listPlace;
     private List<User> listDoctor;
-    private GoogleApiClient googleApiClient;
+    LocationRequest mLocationRequest;
+    GoogleApiClient mGoogleApiClient;
+    Location mLastLocation;
+    Marker mCurrLocationMarker;
 
     public MapTabFragment() {
         // Required empty public constructor
@@ -65,26 +82,26 @@ public class MapTabFragment extends Fragment implements OnMapReadyCallback, Goog
         super.onStart();
     }
 
-    private Boolean getMyLatLng() {
-        gps = new GPSTracker(getContext());
-        // check if GPS enabled
-        if (gps.canGetLocation()) {
-            myLat = gps.getLatitude();
-            myLng = gps.getLongitude();
-            return true;
-        } else {
-            // can't get location// GPS or Network is not enabled// Ask user to enable GPS/network in settings
-//            ActivityCompat.requestPermissions(getActivity(), new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, PERMISSIONS_REQUEST_ACCESS_FINE_LOCATION);
-            return false;
-        }
-    }
+//    private Boolean getMyLatLng() {
+//        gps = new GPSTracker(getContext());
+//        // check if GPS enabled
+//        if (gps.canGetLocation()) {
+//            myLat = gps.getLatitude();
+//            myLng = gps.getLongitude();
+//            return true;
+//        } else {
+//            // can't get location// GPS or Network is not enabled// Ask user to enable GPS/network in settings
+////            ActivityCompat.requestPermissions(getActivity(), new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, PERMISSIONS_REQUEST_ACCESS_FINE_LOCATION);
+//            return false;
+//        }
+//    }
 
     public void addMarker(List<PlaceSearchResponse.Result> listPlace, List<User> listDoctor) {
         Log.d(DEBUG_TAG, "addMarker");
         this.listPlace = listPlace;
         this.listDoctor = listDoctor;
         if (mMap != null) {
-            addMyMarker(myLat, myLng);
+//            addMyMarker(myLat, myLng);
             addDoctorMarker();
             addPlaceMarker();
         }
@@ -95,7 +112,9 @@ public class MapTabFragment extends Fragment implements OnMapReadyCallback, Goog
         super.onCreate(savedInstanceState);
         sharedPreferences = getActivity().getSharedPreferences(SHARED_PREF, Context.MODE_PRIVATE);
         accessToken = sharedPreferences.getString(ACCESS_TOKEN, "");
-        getMyLatLng();
+
+
+//        getMyLatLng();
     }
 
 
@@ -117,22 +136,81 @@ public class MapTabFragment extends Fragment implements OnMapReadyCallback, Goog
     }
 
 
-    @SuppressLint("MissingPermission")
+
     @Override
     public void onMapReady(GoogleMap googleMap) {
         Log.d(DEBUG_TAG, "OnMapReady");
         mMap = googleMap;
         mMap.setOnMarkerClickListener(this);
-        mMap.setMyLocationEnabled(true);
+        if (android.os.Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            if (ContextCompat.checkSelfPermission(getContext(),
+                    android.Manifest.permission.ACCESS_FINE_LOCATION)
+                    == PackageManager.PERMISSION_GRANTED) {
+                buildGoogleApiClient();
+                mMap.setMyLocationEnabled(true);
+            } else {
+                //Request Location Permission
+                checkLocationPermission();
+            }
+        } else {
+            buildGoogleApiClient();
+            mMap.setMyLocationEnabled(true);
+        }
         mMap.getUiSettings().setMyLocationButtonEnabled(true);
         mMap.getUiSettings().setAllGesturesEnabled(true);
         mMap.getUiSettings().setMapToolbarEnabled(true);
         mMap.getUiSettings().setCompassEnabled(true);
-        addMyMarker(myLat, myLng);
+//        addMyMarker(myLat, myLng);
         addDoctorMarker();
         addPlaceMarker();
 
     }
+    protected synchronized void buildGoogleApiClient() {
+        mGoogleApiClient = new GoogleApiClient.Builder(getContext())
+                .addConnectionCallbacks(this)
+                .addOnConnectionFailedListener(this)
+                .addApi(LocationServices.API)
+                .build();
+        mGoogleApiClient.connect();
+    }
+    public static final int MY_PERMISSIONS_REQUEST_LOCATION = 99;
+
+    private void checkLocationPermission() {
+        if (ContextCompat.checkSelfPermission(getContext(), android.Manifest.permission.ACCESS_FINE_LOCATION)
+                != PackageManager.PERMISSION_GRANTED) {
+
+            // Should we show an explanation?
+            if (ActivityCompat.shouldShowRequestPermissionRationale(getActivity(),
+                    android.Manifest.permission.ACCESS_FINE_LOCATION)) {
+
+                // Show an explanation to the user *asynchronously* -- don't block
+                // this thread waiting for the user's response! After the user
+                // sees the explanation, try again to request the permission.
+                new AlertDialog.Builder(getContext())
+                        .setTitle("Location Permission Needed")
+                        .setMessage("This app needs the Location permission, please accept to use location functionality")
+                        .setPositiveButton("OK", new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialogInterface, int i) {
+                                //Prompt the user once explanation has been shown
+                                ActivityCompat.requestPermissions(getActivity(),
+                                        new String[]{android.Manifest.permission.ACCESS_FINE_LOCATION},
+                                        MY_PERMISSIONS_REQUEST_LOCATION);
+                            }
+                        })
+                        .create()
+                        .show();
+
+
+            } else {
+                // No explanation needed, we can request the permission.
+                ActivityCompat.requestPermissions(getActivity(),
+                        new String[]{android.Manifest.permission.ACCESS_FINE_LOCATION},
+                        MY_PERMISSIONS_REQUEST_LOCATION);
+            }
+        }
+    }
+
 
     private void addMyMarker(Double myLat, Double myLng) {
         LatLng myLocation = new LatLng(myLat, myLng);
@@ -169,7 +247,7 @@ public class MapTabFragment extends Fragment implements OnMapReadyCallback, Goog
                 String title = doctor.getFullName();
                 LatLng nearby = new LatLng(lat, lng);
                 MarkerOptions markerOptions = new MarkerOptions().position(nearby).title(title)
-                        .icon(BitmapDescriptorFactory.fromBitmap(resizeMapIcons("doctor", 60, 60)));
+                        .icon(BitmapDescriptorFactory.fromBitmap(resizeMapIcons("doctor", 70, 70)));
                 Marker doctorMarker = mMap.addMarker(markerOptions);
                 doctorMarker.setTag(doctor);
             }
@@ -184,7 +262,7 @@ public class MapTabFragment extends Fragment implements OnMapReadyCallback, Goog
                 String title = result.getName() + ", " + result.getVicinity();
                 LatLng nearby = new LatLng(lat, lng);
                 MarkerOptions markerOptions = new MarkerOptions().position(nearby).title(title)
-                        .icon(BitmapDescriptorFactory.fromBitmap(resizeMapIcons("hospital", 60, 60)));
+                        .icon(BitmapDescriptorFactory.fromBitmap(resizeMapIcons("hospital", 70, 70)));
                 Marker hospitalMarker = mMap.addMarker(markerOptions);
                 hospitalMarker.setTag(result);
             }
@@ -196,20 +274,18 @@ public class MapTabFragment extends Fragment implements OnMapReadyCallback, Goog
         if (info instanceof PlaceSearchResponse.Result) {
             PlaceSearchResponse.Result hospitalResult = (PlaceSearchResponse.Result) info;
             Intent intent = new Intent(this.getContext(), InformationActivity.class);
-            intent.putExtra("placeId", hospitalResult.getPlace_id());
-            intent.putExtra("name", hospitalResult.getName());
+            intent.putExtra("type","place");
+            intent.putExtra("info", hospitalResult);
+            intent.putExtra("myLat", myLat);
+            intent.putExtra("myLng", myLng);
             startActivity(intent);
         } else if (info instanceof User) {
             User doctor = (User) info;
             Intent intent = new Intent(this.getContext(), InformationActivity.class);
-            List<String> infos = new ArrayList<>();
-            infos.add("Giới tính: " + (doctor.getGender() ? "Nam" : "Nữ"));
-            infos.add("Địa chỉ: " + doctor.getAddress());
-            infos.add("Số điện thoại: " + doctor.getPhone());
-            intent.putExtra("specialty", doctor.getSpecialty());
-            intent.putExtra("name", "Bác sỹ " + doctor.getFullName());
-            intent.putExtra("phone", doctor.getPhone());
-            intent.putExtra("infos", (Serializable) infos);
+            intent.putExtra("type", "doctor");
+            intent.putExtra("info", doctor);
+            intent.putExtra("myLat", myLat);
+            intent.putExtra("myLng", myLng);
             startActivity(intent);
         }
         return false;
@@ -217,8 +293,51 @@ public class MapTabFragment extends Fragment implements OnMapReadyCallback, Goog
 
     @Override
     public void onLocationChanged(Location location) {
-        addMyMarker(location.getLatitude(), location.getLongitude());
+        mLastLocation = location;
+        if (mCurrLocationMarker != null) {
+            mCurrLocationMarker.remove();
+        }
+        myLat = location.getLatitude();
+        myLng = location.getLongitude();
+        //Place current location marker
+        LatLng latLng = new LatLng(location.getLatitude(), location.getLongitude());
+        MarkerOptions markerOptions = new MarkerOptions();
+        markerOptions.position(latLng);
+        markerOptions.title("Current Position");
+        markerOptions.icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_MAGENTA));
+        mCurrLocationMarker = mMap.addMarker(markerOptions);
+
+        //move map camera
+        mMap.moveCamera(CameraUpdateFactory.newLatLng(latLng));
+        mMap.animateCamera(CameraUpdateFactory.zoomTo(14));
+
+        //stop location updates
+        if (mGoogleApiClient != null) {
+            LocationServices.FusedLocationApi.removeLocationUpdates(mGoogleApiClient, this);
+        }
     }
 
 
+    @Override
+    public void onConnected(@Nullable Bundle bundle) {
+        mLocationRequest = new LocationRequest();
+        mLocationRequest.setInterval(1000);
+        mLocationRequest.setFastestInterval(1000);
+        mLocationRequest.setPriority(LocationRequest.PRIORITY_BALANCED_POWER_ACCURACY);
+        if (ContextCompat.checkSelfPermission(getContext(),
+                android.Manifest.permission.ACCESS_FINE_LOCATION)
+                == PackageManager.PERMISSION_GRANTED) {
+            LocationServices.FusedLocationApi.requestLocationUpdates(mGoogleApiClient, mLocationRequest, this);
+        }
+    }
+
+    @Override
+    public void onConnectionSuspended(int i) {
+
+    }
+
+    @Override
+    public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {
+
+    }
 }

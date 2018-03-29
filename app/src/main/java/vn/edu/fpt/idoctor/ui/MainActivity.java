@@ -2,6 +2,7 @@ package vn.edu.fpt.idoctor.ui;
 
 
 import android.Manifest;
+import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.AsyncTask;
@@ -24,11 +25,13 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.afollestad.materialdialogs.MaterialDialog;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 
+import java.io.IOException;
 import java.io.Serializable;
 import java.util.HashMap;
 import java.util.List;
@@ -40,14 +43,19 @@ import vn.edu.fpt.idoctor.R;
 import vn.edu.fpt.idoctor.api.model.User;
 import vn.edu.fpt.idoctor.api.response.FindDoctorResponse;
 import vn.edu.fpt.idoctor.api.response.PlaceSearchResponse;
+import vn.edu.fpt.idoctor.api.service.AuthService;
 import vn.edu.fpt.idoctor.api.service.SearchService;
+import vn.edu.fpt.idoctor.api.service.UserService;
 import vn.edu.fpt.idoctor.common.GPSTracker;
+import vn.edu.fpt.idoctor.common.LogoutUtil;
 import vn.edu.fpt.idoctor.common.RetrofitClient;
 import vn.edu.fpt.idoctor.api.response.BaseResponse;
 import vn.edu.fpt.idoctor.api.service.NotificationService;
+import vn.edu.fpt.idoctor.common.ServiceGenerator;
 import vn.edu.fpt.idoctor.ui.fragment.ChatHistoryFragment;
 import vn.edu.fpt.idoctor.ui.fragment.FindFragment;
 import vn.edu.fpt.idoctor.ui.fragment.HomeFragment;
+import vn.edu.fpt.idoctor.ui.fragment.LogoutFragment;
 import vn.edu.fpt.idoctor.ui.fragment.MapTabFragment;
 import vn.edu.fpt.idoctor.ui.fragment.MyAccountFragment;
 import vn.edu.fpt.idoctor.ui.fragment.NotificationFragment;
@@ -56,8 +64,6 @@ import static vn.edu.fpt.idoctor.common.AppConstant.*;
 
 public class MainActivity extends AppCompatActivity
         /*implements NavigationView.OnNavigationItemSelectedListener */ {
-
-    private double myLat, myLng;
     private NavigationView navigationView;
     private DrawerLayout drawer;
     private View navHeader;
@@ -87,6 +93,7 @@ public class MainActivity extends AppCompatActivity
     private String accessToken;
     private List<PlaceSearchResponse.Result> listPlace;
     private List<User> listDoctor;
+    private Double myLat, myLng;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -94,9 +101,10 @@ public class MainActivity extends AppCompatActivity
         setContentView(R.layout.activity_main);
         sharedPreferences = getSharedPreferences(SHARED_PREF, MODE_PRIVATE);
         accessToken = sharedPreferences.getString(ACCESS_TOKEN, "");
-        SendDataTask sendDataTask = new SendDataTask();
-        sendDataTask.execute();
-
+        if (getMyLatLng()) {
+            SendDataTask sendDataTask = new SendDataTask();
+            sendDataTask.execute();
+        }
         toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
@@ -129,22 +137,38 @@ public class MainActivity extends AppCompatActivity
         }
     }
 
+    private Boolean getMyLatLng() {
+        GPSTracker gps = new GPSTracker(MainActivity.this);
+        // check if GPS enabled
+        if (gps.canGetLocation()) {
+            myLat = gps.getLatitude();
+            myLng = gps.getLongitude();
+            return true;
+        } else {
+            // can't get location// GPS or Network is not enabled// Ask user to enable GPS/network in settings
+            gps.showSettingsAlert();
+            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, PERMISSIONS_REQUEST_ACCESS_FINE_LOCATION);
+            return false;
+        }
+    }
 
     private void sendDeviceIdToServer() {
         String deviceId = sharedPreferences.getString(DEVICE_ID, "");
-        HashMap<String, String> body = new HashMap<>();
+        HashMap<String, Object> body = new HashMap<>();
         body.put("deviceId", deviceId);
+        body.put("lat", myLat);
+        body.put("lng", myLng);
         Log.d(DEBUG_TAG, "deviceId: " + deviceId);
-        NotificationService notificationService = RetrofitClient.getClient(API_HOST).create(NotificationService.class);
+        UserService userService = ServiceGenerator.createService(UserService.class, API_HOST);
         String authorization = String.format("Bearer %s", accessToken).trim();
-        Call<BaseResponse> call = notificationService.registerDeviceId(authorization, body);
+        Call<BaseResponse> call = userService.updateData(authorization, body);
         call.enqueue(new Callback<BaseResponse>() {
             @Override
             public void onResponse(Call<BaseResponse> call, Response<BaseResponse> response) {
-                if (response.isSuccessful()) {
-                    Log.d(DEBUG_TAG, "Send deviceID successfully!!! ");
+                if (response.isSuccessful() && response.body().getResultCode() == 200) {
+                    Log.d(DEBUG_TAG, "Update data successfully!!! ");
                 } else {
-                    Log.d(DEBUG_TAG, "Send deviceID: " + response.code() );
+                    Log.d(DEBUG_TAG, "Update data: " + response.code());
                 }
             }
 
@@ -250,10 +274,10 @@ public class MainActivity extends AppCompatActivity
                 FindFragment findFragment = new FindFragment();
                 return findFragment;
             case 2:
-                // chat history fragment
+                // emergency fragment
                 homeFragment = new HomeFragment();
                 Bundle bundle = new Bundle();
-                bundle.putBoolean("isEmergency",true);
+                bundle.putBoolean("isEmergency", true);
                 homeFragment.setArguments(bundle);
                 return homeFragment;
             case 3:
@@ -264,14 +288,50 @@ public class MainActivity extends AppCompatActivity
                 MyAccountFragment myAccountFragment = new MyAccountFragment();
                 return myAccountFragment;
             case 5:
-                Intent intent = new Intent(this, StartActivity.class);
-                startActivity(intent);
-                return new HomeFragment();
+                LogoutTask logoutTask = new LogoutTask();
+                logoutTask.execute();
+                this.finish();
+                return new LogoutFragment();
+
 
         }
         return new HomeFragment();
     }
 
+    private void logout() {
+//        String accessToken = getActivity().getSharedPreferences(SHARED_PREF, Context.MODE_PRIVATE).getString(ACCESS_TOKEN,"");
+        String authorization = String.format("Bearer %s", accessToken).trim();
+        AuthService authService = ServiceGenerator.createService(AuthService.class, API_HOST);
+        try {
+            Response<BaseResponse> response = authService.logout(authorization).execute();
+            if (response.isSuccessful() && response.body().getResultCode() == 200) {
+                LogoutUtil.logout(getSharedPreferences(SHARED_PREF, Context.MODE_PRIVATE));
+                Log.d(DEBUG_TAG, "Logout successfull");
+            } else {
+                Log.d(DEBUG_TAG, "Logout fail!" + response.code());
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+    }
+
+    private class LogoutTask extends AsyncTask<Void, Void, Void> {
+        @Override
+        protected Void doInBackground(Void... voids) {
+            logout();
+            return null;
+        }
+    }
+
+    public class SendDataTask extends AsyncTask<Object, Object, Object> {
+
+        @Override
+        protected Object doInBackground(Object... objects) {
+            sendDeviceIdToServer();
+            return null;
+        }
+    }
 
     private void setToolbarTitle() {
         getSupportActionBar().setTitle(activityTitles[navItemIndex]);
@@ -500,13 +560,5 @@ public class MainActivity extends AppCompatActivity
 //        return true;
 //    }
 
-    public class SendDataTask extends AsyncTask<Object, Object, Object> {
-
-        @Override
-        protected Object doInBackground(Object... objects) {
-            sendDeviceIdToServer();
-            return null;
-        }
-    }
 
 }

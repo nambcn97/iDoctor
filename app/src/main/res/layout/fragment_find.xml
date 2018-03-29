@@ -2,12 +2,80 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     tools:context="vn.edu.fpt.idoctor.ui.fragment.FindFragment">
-
-    <!-- TODO: Update blank fragment layout -->
-    <TextView
+    <RelativeLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:text="@string/hello_blank_fragment" />
+        android:layout_margin="20dp"
+        android:layout_marginTop="30dp"
+        android:theme="@style/MyStyle">
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Triệu chứng: "
+            android:layout_alignBaseline="@+id/spnSymptom"
+            android:id="@+id/textView4" />
+
+        <com.jaredrummler.materialspinner.MaterialSpinner
+            android:id="@+id/spnSymptom"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_alignParentTop="true"
+            android:layout_marginStart="29dp"
+            android:layout_toEndOf="@+id/textView4" />
+        <TextView
+            android:id="@+id/tvOtherSymptom"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@+id/spnSymptom"
+            android:layout_marginTop="20dp"
+            android:text="Triệu chứng khác:"/>
+
+        <EditText
+            android:id="@+id/edtOtherSymptom"
+            android:hint="Các triệu chứng khác"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:minHeight="150dp"
+            android:ems="10"
+            android:layout_marginStart="15dp"
+            android:layout_marginEnd="15dp"
+            android:inputType="textMultiLine"
+            android:layout_below="@+id/tvOtherSymptom"
+            android:layout_marginTop="@dimen/find_doctor_padding"
+            android:textColor="@color/black"/>
+        <!--<TextView-->
+            <!--android:id="@+id/tvAge"-->
+            <!--android:text="Độ tuổi: "-->
+            <!--android:layout_width="wrap_content"-->
+            <!--android:layout_height="wrap_content"-->
+            <!--android:layout_alignBaseline="@+id/spnAges"            />-->
+
+        <!--<com.jaredrummler.materialspinner.MaterialSpinner-->
+            <!--android:id="@+id/spnAges"-->
+            <!--android:layout_width="wrap_content"-->
+            <!--android:layout_height="wrap_content"-->
+            <!--android:layout_alignEnd="@+id/spnSymptom"-->
+            <!--android:layout_alignStart="@+id/spnSymptom"-->
+            <!--android:layout_below="@+id/edtOtherSymptom"-->
+            <!--android:layout_marginTop="@dimen/find_doctor_padding"-->
+            <!--app:ms_text_color="@color/colorPrimary"-->
+            <!--app:ms_hint="Nhóm tuổi"-->
+            <!--app:ms_hint_color="@color/colorPrimary"/>-->
+
+        <Button
+            android:id="@+id/btnFind"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@+id/edtOtherSymptom"
+            android:layout_centerHorizontal="true"
+            android:layout_marginTop="113dp"
+            android:background="@drawable/buttonshape_blue"
+            android:text="Tìm kiếm"
+            android:textColor="@color/white" />
+
+    </RelativeLayout>
+
 
 </FrameLayout>

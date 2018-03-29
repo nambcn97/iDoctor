@@ -54,8 +54,7 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
     private Boolean rememberMe;
     private SharedPreferences sharedPreferences;
     private ProgressBar progressBar;
-    private Window window;
-    private boolean permissionGranted;
+    private Double myLat, myLng;
     private TextView tvReturn;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -76,7 +75,6 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
             edtPassword.setText(sharedPreferences.getString(PASSWORD, ""));
             cbRememberMe.setChecked(true);
         }
-        window = this.getWindow();
         cbRememberMe.setOnClickListener(this);
         btnLogin.setOnClickListener(this);
         tvReturn.setOnClickListener(this);

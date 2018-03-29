@@ -4,6 +4,7 @@ import java.util.HashMap;
 
 import retrofit2.Call;
 import retrofit2.http.Body;
+import retrofit2.http.GET;
 import retrofit2.http.Header;
 import retrofit2.http.POST;
 import vn.edu.fpt.idoctor.api.response.BaseResponse;
@@ -18,5 +19,9 @@ public interface AuthService {
     public Call<LoginResponse> login(@Header("Authorization") String auth, @Body HashMap<String, String> json);
 
     @POST("/auth/signUp")
-    public Call<BaseResponse> signUp(@Header("Authorization") String token, @Body HashMap<String, String> json);
+    public Call<BaseResponse> signUp(@Body HashMap<String, Object> json);
+
+    @GET("/auth/logout")
+    public Call<BaseResponse> logout(@Header("Authorization") String auth);
+
 }

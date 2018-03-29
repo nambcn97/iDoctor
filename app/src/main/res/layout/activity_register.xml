@@ -40,7 +40,7 @@
         android:layout_below="@+id/textView2"
         android:layout_centerHorizontal="true"
         android:layout_gravity="center_vertical"
-        android:layout_marginTop="20dp"
+        android:layout_marginTop="15dp"
         android:background="@color/colorPrimary"
         android:drawablePadding="5dp"
         android:ems="11"
@@ -116,7 +116,9 @@
         android:inputType="textPostalAddress"
         android:paddingLeft="5dp"
         android:textColor="@color/white"
-        android:textColorHint="@color/white" />
+        android:textColorHint="@color/white"
+        android:drawableEnd="@drawable/ic_location_on_black_24dp"
+        android:drawableTint="@color/white"/>
 
     <EditText
         android:id="@+id/edtPhone"
@@ -178,7 +180,7 @@
         android:text="Bác sỹ"
         android:textColor="@color/white" />
 
-    <Spinner
+    <com.jaredrummler.materialspinner.MaterialSpinner
         android:id="@+id/spinnerSpecialty"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -188,8 +190,11 @@
         android:layout_gravity="center_vertical"
         android:layout_marginTop="@dimen/register_padding"
         android:clickable="false"
-        android:background="@drawable/bg_spinner"
-        android:popupBackground="@color/colorPrimaryDark"
+        app:ms_hint="Chuyên Khoa"
+        app:ms_text_color="@color/white"
+        app:ms_hint_color="@color/white"
+        android:textSize="18dp"
+        app:ms_background_color="@color/colorPrimary"
         android:ems="11"/>
 
     <EditText
@@ -208,7 +213,7 @@
         android:textColorHint="@color/white"/>
 
     <Button
-        android:id="@+id/btnRegister"
+        android:id="@+id/btnSignup"
         android:layout_width="250dp"
         android:layout_height="40dp"
         android:layout_below="@+id/edtWorkAddress"
@@ -225,7 +230,7 @@
         android:id="@+id/textView3"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_below="@id/btnRegister"
+        android:layout_below="@id/btnSignup"
         android:layout_alignStart="@id/tvAppName"
         android:layout_marginTop="6dp"
         android:text="Quay lại "

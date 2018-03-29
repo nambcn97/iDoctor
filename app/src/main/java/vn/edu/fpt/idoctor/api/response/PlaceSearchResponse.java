@@ -39,7 +39,24 @@ public class PlaceSearchResponse implements Serializable {
         private List<Photo> photos;
         private String place_id;
         private String vicinity;
+        private Double rating;
+        private List<String> types;
 
+        public Double getRating() {
+            return rating;
+        }
+
+        public void setRating(Double rating) {
+            this.rating = rating;
+        }
+
+        public List<String> getTypes() {
+            return types;
+        }
+
+        public void setTypes(List<String> types) {
+            this.types = types;
+        }
 
         public Geometry getGeometry() {
             return geometry;
@@ -141,6 +158,7 @@ public class PlaceSearchResponse implements Serializable {
 
         public class OpeningHour implements Serializable {
             private Boolean open_now;
+            private List<String> weekday_text;
 
             public Boolean getOpen_now() {
                 return open_now;
@@ -148,6 +166,14 @@ public class PlaceSearchResponse implements Serializable {
 
             public void setOpen_now(Boolean open_now) {
                 this.open_now = open_now;
+            }
+
+            public List<String> getWeekday_text() {
+                return weekday_text;
+            }
+
+            public void setWeekday_text(List<String> weekday_text) {
+                this.weekday_text = weekday_text;
             }
         }
 

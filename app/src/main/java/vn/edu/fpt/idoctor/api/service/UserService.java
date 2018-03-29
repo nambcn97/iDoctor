@@ -10,13 +10,10 @@ import vn.edu.fpt.idoctor.api.response.BaseResponse;
 import vn.edu.fpt.idoctor.api.response.LoginResponse;
 
 /**
- * Created by NamBC on 3/16/2018.
+ * Created by NamBC on 3/29/2018.
  */
 
-public interface NotificationService {
-
-
-    @POST("/get/sendEmergency")
-    public Call sendEmergency();
-
+public interface UserService {
+    @POST("/mobile/updateData")
+    public Call<BaseResponse> updateData(@Header("Authorization") String auth, @Body HashMap<String, Object> json);
 }

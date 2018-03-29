@@ -80,9 +80,13 @@
             android:theme="@style/AppTheme">
             <intent-filter>
                 <action android:name=".ui.PatientRequestMapsActivity" />
+
                 <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>
         </activity>
+        <activity
+            android:name=".ui.DirectionMapsActivity"
+            android:label="@string/title_activity_direction_maps"></activity>
     </application>
 
 </manifest>

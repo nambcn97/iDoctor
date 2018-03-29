@@ -40,4 +40,8 @@
     <style name="MyDialogStyle" parent="@android:style/Theme.Holo.Light.Dialog">
         <item name="android:windowBackground">@android:color/transparent</item>
     </style>
+    <style name="MyStyle" parent="AppTheme.NoActionBar">
+        <item name="android:textSize">20dp</item>
+        <item name="android:textColor">@color/colorPrimary</item>
+    </style>
 </resources>

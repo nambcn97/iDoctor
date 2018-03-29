@@ -18,6 +18,24 @@ public class User implements Serializable {
     private Boolean gender;
     private Double lat;
     private Double lng;
+    private String status;
+    private String workAddress;
+
+    public String getStatus() {
+        return status;
+    }
+
+    public void setStatus(String status) {
+        this.status = status;
+    }
+
+    public String getWorkAddress() {
+        return workAddress;
+    }
+
+    public void setWorkAddress(String workAddress) {
+        this.workAddress = workAddress;
+    }
 
     public Long getId() {
         return id;

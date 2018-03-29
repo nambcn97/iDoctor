@@ -53,6 +53,7 @@ import vn.edu.fpt.idoctor.api.service.SearchService;
 import vn.edu.fpt.idoctor.common.GPSTracker;
 import vn.edu.fpt.idoctor.common.RetrofitClient;
 import vn.edu.fpt.idoctor.common.ServiceGenerator;
+import vn.edu.fpt.idoctor.ui.LoginActivity;
 import vn.edu.fpt.idoctor.ui.MainActivity;
 import vn.edu.fpt.idoctor.ui.StartActivity;
 
@@ -86,7 +87,10 @@ public class HomeFragment extends Fragment {
     private ListDoctorTabFragment listDoctorTabFragment;
     private String deviceId;
     private MaterialDialog loadingDialog;
-    private Boolean isEmergency;
+    private Boolean isEmergency = false;
+    private String findOthers;
+    private Long symptomId;
+
     public HomeFragment() {
         // Required empty public constructor
     }
@@ -94,13 +98,17 @@ public class HomeFragment extends Fragment {
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        loadingDialog = new MaterialDialog.Builder(getContext())
+        loadingDialog = new MaterialDialog.Builder(getActivity())
                 .title("In Progress")
                 .content("Please wait")
                 .progress(true, 0)
                 .show();
+        if (getArguments() != null) {
+            isEmergency = getArguments().getBoolean("isEmergency", false);
+            findOthers = getArguments().getString("find_others", "");
+            symptomId = getArguments().getLong("find_symptomId", 1);
+        }
 
-        isEmergency = getArguments().getBoolean("isEmergency", false);
         sharedPreferences = getActivity().getSharedPreferences(SHARED_PREF, Context.MODE_PRIVATE);
         accessToken = sharedPreferences.getString(ACCESS_TOKEN, "");
         deviceId = sharedPreferences.getString(DEVICE_ID, "");
@@ -148,7 +156,7 @@ public class HomeFragment extends Fragment {
 
             @Override
             public int getCount() {
-                return 2;
+                return 1;
             }
 
             @Override
@@ -184,7 +192,7 @@ public class HomeFragment extends Fragment {
         } else {
             // can't get location// GPS or Network is not enabled// Ask user to enable GPS/network in settings
 //            gps.showSettingsAlert();
-//            ActivityCompat.requestPermissions(getActivity(), new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, PERMISSIONS_REQUEST_ACCESS_FINE_LOCATION);
+            ActivityCompat.requestPermissions(getActivity(), new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, PERMISSIONS_REQUEST_ACCESS_FINE_LOCATION);
             return false;
         }
     }
@@ -216,7 +224,7 @@ public class HomeFragment extends Fragment {
         try {
             Response<SendEmergencyResponse> response = call.execute();
             Log.d(DEBUG_TAG, "sendNoti: " + response.code());
-            if (response.isSuccessful()) {
+            if (response.isSuccessful() && response.body().getResultCode() == 200) {
 
                 SendEmergencyResponse responseBody = response.body();
                 List<EmergencyBean> emergencyBeans = responseBody.getEmergencies();
@@ -283,6 +291,32 @@ public class HomeFragment extends Fragment {
 
     }
 
+    public void searchDoctorBySymptom() {
+        HashMap<String, String> body = new HashMap<>();
+        body.put("others", findOthers);
+        body.put("symptomId", symptomId + "");
+        SearchService searchService = RetrofitClient.getClient(API_HOST).create(SearchService.class);
+        String authorization = String.format("Bearer %s", accessToken).trim();
+        Call<FindDoctorResponse> call = searchService.searchDoctor(authorization, body);
+        try {
+            Response<FindDoctorResponse> response = call.execute();
+            Log.d(DEBUG_TAG, "search doctor response: " + response.code());
+            if (response.isSuccessful()) {
+
+                if (!response.isSuccessful()) return;
+                Log.d(DEBUG_TAG, "result: " + response.body().getDoctors().size());
+                FindDoctorResponse findRes = response.body();
+                listDoctor = findRes.getDoctors();
+            } else {
+                Log.d(DEBUG_TAG, "search doctor response: " + response.message());
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+            Log.d(DEBUG_TAG, "search hospital: " + e.getMessage());
+        }
+
+    }
+
 
     public class SearchNearbyTask extends AsyncTask<Double, Void, Void> {
 
@@ -296,6 +330,8 @@ public class HomeFragment extends Fragment {
             searchHospitalNearby(doubles[0], doubles[1]);
             if (isEmergency) {
                 searchAndSendEmergency();
+            } else if (findOthers != null || symptomId != null) {
+                searchDoctorBySymptom();
             } else {
                 searchDoctorNearby(doubles[0], doubles[1]);
             }
@@ -303,7 +339,7 @@ public class HomeFragment extends Fragment {
         }
 
         @SuppressLint("MissingPermission")
-        private void callIntent(){
+        private void callIntent() {
             Intent intent = new Intent(Intent.ACTION_CALL, Uri.parse("tel:" + "115"));
             startActivity(intent);
         }
@@ -312,22 +348,23 @@ public class HomeFragment extends Fragment {
         protected void onPostExecute(Void aVoid) {
             loadingDialog.dismiss();
             mapTabFragment.addMarker(listPlace, listDoctor);
-            if (isEmergency){
-                AlertDialog.Builder alertDialog = new AlertDialog.Builder(getActivity());
 
-                // Setting Dialog Title
-                alertDialog.setTitle("Gọi cấp cứu");
+            if (isEmergency) {
+                final AlertDialog.Builder alertDialog = new AlertDialog.Builder(getActivity());
+
                 // Setting Dialog Message
-                if (listDoctor == null || listDoctor.size() == 0){
+                if (listDoctor == null || listDoctor.size() == 0) {
                     alertDialog.setTitle("Không tìm thấy bác sỹ nào đang trực tuyến gần bạn");
-                    if (accessToken.isEmpty()){
-                        alertDialog.setMessage("Hãy gọi 115 hoặc liên lạc với các bệnh viện lân cận");
-                    } else
-                        alertDialog.setMessage("Hãy gọi 115 hoặc Về trang chủ để liên lạc với các bác sỹ ngoại tuyến và các bệnh viện xung quanh");
-                    alertDialog.setPositiveButton("Gọi 115", new DialogInterface.OnClickListener() {
+                    if (accessToken.isEmpty()) {
+                        alertDialog.setMessage("Hãy gọi 115 hoặc liên lạc với các bệnh viện/cơ sở y tế lân cận");
+                    } else {
+                        alertDialog.setMessage("Hãy gọi 115 hoặc Về trang chủ để liên lạc với các bác sỹ ngoại tuyến và các bệnh viện/cơ sở y tế xung quanh");
+                    }
+                    alertDialog.setNegativeButton("Gọi 115", new DialogInterface.OnClickListener() {
                         @Override
                         public void onClick(DialogInterface dialogInterface, int i) {
                             if (ActivityCompat.checkSelfPermission(getContext(), Manifest.permission.CALL_PHONE) != PackageManager.PERMISSION_GRANTED) {
+                                ActivityCompat.requestPermissions(getActivity(), new String[]{Manifest.permission.CALL_PHONE}, 2609);
                                 return;
                             }
                             callIntent();
@@ -336,28 +373,31 @@ public class HomeFragment extends Fragment {
                     alertDialog.setPositiveButton("Về trang chủ", new DialogInterface.OnClickListener() {
                         @Override
                         public void onClick(DialogInterface dialogInterface, int i) {
-                            if (!accessToken.isEmpty()) refresh();
+                            if (!accessToken.isEmpty()) {
+                                Intent intent = new Intent(getContext(), MainActivity.class);
+                                startActivity(intent);
+                            }
                             else {
-                                Intent intent = new Intent();
-
+                                dialogInterface.dismiss();
                             }
                         }
                     });
+                } else {
+                    alertDialog.setTitle("Gọi khẩn cấp");
+                    alertDialog.setMessage("Đã tìm thấy " + listDoctor.size() + " bác sỹ đang trực tuyến và " + listPlace.size() + " nhà thuốc/bệnh viện/cơ sở y tế gần bạn");
+                    // On pressing Settings button
+                    alertDialog.setPositiveButton("OK", new DialogInterface.OnClickListener() {
+                        public void onClick(DialogInterface dialog, int which) {
+                            dialog.dismiss();
+                        }
+                    });
                 }
-                alertDialog.setMessage("");
-
-                // On pressing Settings button
-                alertDialog.setPositiveButton("Settings", new DialogInterface.OnClickListener() {
-                    public void onClick(DialogInterface dialog, int which) {
-                        Intent intent = new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS);
-                        getActivity().startActivity(intent);
-                    }
-                });
+                alertDialog.show();
             }
         }
     }
 
-    public void refresh(){
+    public void refresh() {
         FragmentTransaction ft = getFragmentManager().beginTransaction();
         ft.detach(this).attach(this).commit();
     }

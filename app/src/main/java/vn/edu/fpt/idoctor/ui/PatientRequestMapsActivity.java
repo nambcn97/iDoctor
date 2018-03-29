@@ -122,6 +122,7 @@ public class PatientRequestMapsActivity extends FragmentActivity implements OnMa
             buildGoogleApiClient();
             mMap.setMyLocationEnabled(true);
         }
+        mMap.setOnMarkerClickListener(this);
         loadingDialog.dismiss();
     }
 
@@ -162,15 +163,16 @@ public class PatientRequestMapsActivity extends FragmentActivity implements OnMa
             Double lng = fromUserObj.getDouble("lng");
             String role = fromUserObj.getString("role");
             String title;
-            if (role.equals("Anonymoust")) {
+            if (role.equals("Anonymous")) {
                 title = fromUserObj.getString("phone");
             } else {
                 title = fromUserObj.getString("fullName");
             }
             LatLng nearby = new LatLng(lat, lng);
             MarkerOptions markerOptions = new MarkerOptions().position(nearby).title(title)
-                    .icon(BitmapDescriptorFactory.fromBitmap(resizeMapIcons("patient_marker", 60, 60)));
+                    .icon(BitmapDescriptorFactory.fromBitmap(resizeMapIcons("ic_patient_marker", 70, 70)));
             Marker doctorMarker = mMap.addMarker(markerOptions);
+
         } catch (JSONException e) {
             e.printStackTrace();
         }
@@ -287,29 +289,12 @@ public class PatientRequestMapsActivity extends FragmentActivity implements OnMa
 
     @Override
     public boolean onMarkerClick(Marker marker) {
-        try {
-            Intent intent = new Intent(getApplicationContext(), InformationActivity.class);
-            List<String> infos = new ArrayList<>();
-            String name, specialty;
-            if (fromUserObj.get("role").equals("Anonymoust")) {
-                name = fromUserObj.getString("phone");
-                infos.add("Cấp cứu từ người lạ");
-                infos.add("Số điện thoại: " + name);
-            } else {
-                name = fromUserObj.getString("name");
-                infos.add("Số điện thoại: " + fromUserObj.getString("phone"));
-                infos.add("Giới tính: " + (fromUserObj.getBoolean("gender") ? "Nam" : "Nữ"));
-            }
-            specialty = "Người gọi cấp cứu";
-            intent.putExtra("name", name);
-            intent.putExtra("specialty", specialty);
-            intent.putExtra("phone", fromUserObj.getString("phone"));
-            intent.putExtra("infos", (Serializable) infos);
-            startActivity(intent);
-
-        } catch (JSONException e){
-            e.printStackTrace();
-        }
+        Intent intent = new Intent(getApplicationContext(), InformationActivity.class);
+        intent.putExtra("type", "emergency");
+        intent.putExtra("info", fromUser);
+        intent.putExtra("myLat", mLastLocation.getLatitude());
+        intent.putExtra("myLng", mLastLocation.getLongitude());
+        startActivity(intent);
         return false;
     }
 }

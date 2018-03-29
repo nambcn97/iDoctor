@@ -66,7 +66,20 @@
         android:layout_marginLeft="25dp"
         android:layout_toStartOf="@+id/imgAvatar"
         android:background="@color/colorPrimary"
-        android:src="@android:drawable/ic_menu_call" />
+        android:src="@android:drawable/ic_menu_call"
+        android:visibility="gone"/>
+
+    <ImageButton
+        android:id="@+id/imgBtnAccept"
+        android:layout_width="70dp"
+        android:layout_height="70dp"
+        android:layout_alignParentBottom="true"
+        android:layout_marginBottom="16dp"
+        android:layout_marginEnd="24dp"
+        android:layout_marginLeft="25dp"
+        android:layout_toStartOf="@+id/imgAvatar"
+        android:src="@drawable/ic_accept"
+        android:scaleType="fitCenter"/>
 
     <ImageButton
         android:id="@+id/imgBtnRedirect"
@@ -75,7 +88,8 @@
         android:layout_alignBottom="@+id/imgBtnCall"
         android:layout_centerHorizontal="true"
         android:background="@color/colorPrimary"
-        android:src="@android:drawable/ic_menu_directions" />
+        android:src="@android:drawable/ic_menu_directions"
+        android:visibility="gone"/>
 
     <ImageButton
         android:id="@+id/imgBtnChat"
@@ -87,5 +101,15 @@
         android:layout_marginStart="22dp"
         android:layout_toEndOf="@+id/imgAvatar"
         android:background="@color/colorPrimary"
-        android:src="@android:drawable/ic_dialog_email" />
+        android:src="@android:drawable/ic_dialog_email"
+        android:visibility="visible"/>
+
+    <ImageButton
+        android:id="@+id/imgBtnDeny"
+        android:layout_width="70dp"
+        android:layout_height="70dp"
+        android:layout_alignEnd="@+id/lstInfo"
+        android:layout_alignTop="@+id/imgBtnAccept"
+        android:scaleType="fitCenter"
+        android:src="@drawable/ic_deny" />
 </RelativeLayout>
