@@ -1,13 +1,202 @@
-<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<?xml version="1.0" encoding="utf-8"?>
+<android.support.design.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:theme="@style/MyStyle"
     tools:context="vn.edu.fpt.idoctor.ui.fragment.MyAccountFragment">
 
-    <!-- TODO: Update blank fragment layout -->
-    <TextView
+    <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        xmlns:tools="http://schemas.android.com/tools"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:text="@string/hello_blank_fragment" />
+        app:layout_behavior="@string/appbar_scrolling_view_behavior"
+        tools:context="vn.edu.fpt.idoctor.ui.InformationActivity"
+        tools:showIn="@layout/activity_information">
 
-</FrameLayout>
+        <ImageView
+            android:id="@+id/imgBackground"
+            android:layout_width="match_parent"
+            android:layout_height="110dp"
+            android:layout_alignParentStart="true"
+            android:layout_alignParentTop="true"
+            android:scaleType="center"
+            android:src="@color/colorPrimary" />
+
+        <ImageView
+            android:id="@+id/imgAvatar"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentTop="true"
+            android:layout_centerHorizontal="true"
+            android:src="@drawable/ic_profile" />
+
+        <TextView
+            android:id="@+id/tvName"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@+id/imgAvatar"
+            android:layout_centerHorizontal="true"
+            android:text="Nguyen Van A"
+            android:textColor="@color/black"
+            android:textSize="24dp" />
+
+        <TextView
+            android:id="@+id/tvFullName"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignBaseline="@+id/edtFullName"
+            android:layout_alignBottom="@+id/edtFullName"
+            android:layout_alignParentStart="true"
+            android:layout_marginStart="14dp"
+            android:text="Họ và tên:" />
+
+        <EditText
+            android:id="@+id/edtFullName"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignStart="@+id/btnEdit"
+            android:layout_below="@+id/tvName"
+            android:layout_marginTop="9dp"
+            android:ems="9"
+            android:inputType="textPersonName"
+            android:text="Họ tên"
+            android:gravity="end"/>
+
+        <TextView
+            android:id="@+id/tvPhone"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignBaseline="@+id/edtPhone"
+            android:layout_alignBottom="@+id/edtPhone"
+            android:layout_alignStart="@+id/tvFullName"
+            android:layout_centerVertical="true"
+            android:text="Số điện thoại:" />
+
+        <EditText
+            android:id="@+id/edtPhone"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignStart="@+id/edtFullName"
+            android:layout_below="@+id/edtFullName"
+            android:layout_marginTop="4dp"
+            android:layout_centerVertical="true"
+            android:ems="9"
+            android:inputType="phone"
+            android:text="Phone"
+            android:gravity="end"/>
+
+        <EditText
+            android:id="@+id/edtAddress"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignStart="@+id/edtPhone"
+            android:layout_below="@+id/edtPhone"
+            android:layout_marginTop="4dp"
+            android:ems="9"
+            android:inputType="textPersonName"
+            android:text="Address"
+            android:gravity="end"/>
+
+        <Spinner
+            android:id="@+id/spnGender"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignEnd="@+id/edtAddress"
+            android:layout_alignStart="@+id/edtAddress"
+            android:layout_below="@+id/edtAddress"
+            android:layout_marginTop="4dp"
+            android:theme="@style/textBlackStyle"
+            style="@style/textBlackStyle"
+            android:gravity="end"/>
+
+        <EditText
+            android:id="@+id/edtWorkAddress"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignStart="@+id/spnGender"
+            android:layout_below="@+id/spnGender"
+            android:layout_marginTop="4dp"
+            android:ems="9"
+            android:inputType="textPersonName"
+            android:text="WorkAddress"
+            android:gravity="end"/>
+
+        <Spinner
+            android:id="@+id/spnSpecialty"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_alignEnd="@+id/edtWorkAddress"
+            android:layout_alignStart="@+id/edtWorkAddress"
+            android:layout_below="@+id/edtWorkAddress"
+            android:layout_marginTop="4dp"
+            style="@style/textBlackStyle"
+            android:theme="@style/textBlackStyle"
+            android:gravity="end"/>
+
+
+
+        <TextView
+            android:id="@+id/tvAddress"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignBaseline="@+id/edtAddress"
+            android:layout_alignBottom="@+id/edtAddress"
+            android:layout_alignStart="@+id/tvGender"
+            android:text="Địa chỉ:" />
+
+        <TextView
+            android:id="@+id/tvGender"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_above="@+id/edtWorkAddress"
+            android:layout_alignStart="@+id/tvPhone"
+            android:text="Giới tính:" />
+
+        <TextView
+            android:id="@+id/tvWorkAddress"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_above="@+id/spnSpecialty"
+            android:layout_alignStart="@+id/tvGender"
+            android:layout_alignBaseline="@+id/edtWorkAddress"
+            android:layout_alignBottom="@+id/edtWorkAddress"
+            android:layout_marginBottom="11dp"
+            android:text="Nơi làm việc:" />
+
+        <TextView
+            android:id="@+id/tvSpecialty"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignBottom="@+id/spnSpecialty"
+            android:layout_alignStart="@+id/tvWorkAddress"
+            android:text="Chuyên khoa:" />
+
+        <Button
+            android:id="@+id/btnEdit"
+            android:layout_width="100dp"
+            android:layout_height="wrap_content"
+            android:layout_alignParentBottom="true"
+            android:layout_centerHorizontal="true"
+            android:layout_marginBottom="13dp"
+            android:textColor="@color/white"
+            android:background="@drawable/buttonshape_blue"
+            android:text="Edit" />
+        <Button
+            android:id="@+id/btnSave"
+            android:layout_width="100dp"
+            android:layout_height="wrap_content"
+            android:layout_alignParentBottom="true"
+            android:layout_centerHorizontal="true"
+            android:layout_marginBottom="13dp"
+            android:textColor="@color/white"
+            android:background="@drawable/buttonshape_blue"
+            android:text="Save" />
+
+
+
+    </RelativeLayout>
+
+</android.support.design.widget.CoordinatorLayout>

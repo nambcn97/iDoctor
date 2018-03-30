@@ -20,9 +20,8 @@
         <com.jaredrummler.materialspinner.MaterialSpinner
             android:id="@+id/spnSymptom"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
+            android:layout_height="50dp"
             android:layout_alignParentTop="true"
-            android:layout_marginStart="29dp"
             android:layout_toEndOf="@+id/textView4" />
         <TextView
             android:id="@+id/tvOtherSymptom"
@@ -33,18 +32,21 @@
             android:text="Triệu chứng khác:"/>
 
         <EditText
+            android:gravity="top"
             android:id="@+id/edtOtherSymptom"
-            android:hint="Các triệu chứng khác"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:minHeight="150dp"
-            android:ems="10"
-            android:layout_marginStart="15dp"
-            android:layout_marginEnd="15dp"
-            android:inputType="textMultiLine"
             android:layout_below="@+id/tvOtherSymptom"
-            android:layout_marginTop="@dimen/find_doctor_padding"
-            android:textColor="@color/black"/>
+            android:layout_centerHorizontal="true"
+            android:layout_marginTop="33dp"
+            android:ems="10"
+            android:hint="Các triệu chứng khác"
+            android:inputType="textMultiLine"
+            android:minHeight="170dp"
+            android:maxHeight="300dp"
+            android:textAlignment="viewStart"
+            android:textColor="@color/black"
+            android:backgroundTint="@color/colorPrimary" />
         <!--<TextView-->
             <!--android:id="@+id/tvAge"-->
             <!--android:text="Độ tuổi: "-->
@@ -68,9 +70,9 @@
             android:id="@+id/btnFind"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_below="@+id/edtOtherSymptom"
             android:layout_centerHorizontal="true"
-            android:layout_marginTop="113dp"
+            android:layout_alignParentBottom="true"
+            android:layout_marginBottom="30dp"
             android:background="@drawable/buttonshape_blue"
             android:text="Tìm kiếm"
             android:textColor="@color/white" />

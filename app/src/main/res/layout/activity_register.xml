@@ -118,6 +118,7 @@
         android:textColor="@color/white"
         android:textColorHint="@color/white"
         android:drawableEnd="@drawable/ic_location_on_black_24dp"
+        android:focusable="false"
         android:drawableTint="@color/white"/>
 
     <EditText
@@ -190,7 +191,6 @@
         android:layout_gravity="center_vertical"
         android:layout_marginTop="@dimen/register_padding"
         android:clickable="false"
-        app:ms_hint="Chuyên Khoa"
         app:ms_text_color="@color/white"
         app:ms_hint_color="@color/white"
         android:textSize="18dp"

@@ -3,10 +3,8 @@ package vn.edu.fpt.idoctor.ui;
 import android.Manifest;
 import android.annotation.SuppressLint;
 import android.content.Intent;
-import android.content.IntentSender;
 import android.content.pm.PackageManager;
 import android.net.Uri;
-import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
@@ -25,13 +23,10 @@ import com.afollestad.materialdialogs.MaterialDialog;
 import com.google.android.gms.location.places.GeoDataClient;
 import com.google.android.gms.location.places.Place;
 import com.google.android.gms.location.places.PlaceBufferResponse;
-import com.google.android.gms.location.places.PlacePhotoMetadata;
-import com.google.android.gms.location.places.PlacePhotoMetadataResponse;
 import com.google.android.gms.location.places.Places;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
-import com.google.gson.JsonObject;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -39,24 +34,17 @@ import org.json.JSONObject;
 import java.util.ArrayList;
 import java.util.List;
 
-import retrofit2.Call;
-import retrofit2.Callback;
-import retrofit2.Response;
 import vn.edu.fpt.idoctor.R;
 import vn.edu.fpt.idoctor.api.model.User;
 import vn.edu.fpt.idoctor.api.response.PlaceSearchResponse;
-import vn.edu.fpt.idoctor.common.RetrofitClient;
-import vn.edu.fpt.idoctor.api.response.PlaceDetailsResponses;
-import vn.edu.fpt.idoctor.api.service.SearchService;
 
 import static vn.edu.fpt.idoctor.common.AppConstant.DEBUG_TAG;
-import static vn.edu.fpt.idoctor.common.AppConstant.GOOGLE_MAPS_BASE_URL;
 
 public class InformationActivity extends AppCompatActivity implements View.OnClickListener {
     private ListView lstInfo;
     private TextView tvName, tvRole;
     private List<String> infos;
-    private ImageButton imgBtnCall, imgBtnRedirect, imgBtnAccept, imgBtnDeny;
+    private ImageButton imgBtnCall, imgBtnDirect, imgBtnAccept, imgBtnDeny;
     private String phone = "115";
     private GeoDataClient mGeoDataClient;
     private LatLng fromLatLng, toLatLng;
@@ -77,13 +65,13 @@ public class InformationActivity extends AppCompatActivity implements View.OnCli
         tvName = findViewById(R.id.tvName);
         tvRole = findViewById(R.id.tvRole);
         imgBtnCall = findViewById(R.id.imgBtnCall);
-        imgBtnRedirect = findViewById(R.id.imgBtnRedirect);
+        imgBtnDirect = findViewById(R.id.imgBtnDirect);
         imgBtnAccept = findViewById(R.id.imgBtnAccept);
         imgBtnDeny = findViewById(R.id.imgBtnDeny);
         imgBtnAccept.setOnClickListener(this);
         imgBtnDeny.setOnClickListener(this);
         imgBtnCall.setOnClickListener(this);
-        imgBtnRedirect.setOnClickListener(this);
+        imgBtnDirect.setOnClickListener(this);
         disableEmergencyBtn();
         infos = new ArrayList<>();
 
@@ -195,14 +183,14 @@ public class InformationActivity extends AppCompatActivity implements View.OnCli
         imgBtnAccept.setVisibility(View.VISIBLE);
         imgBtnDeny.setVisibility(View.VISIBLE);
         imgBtnCall.setVisibility(View.GONE);
-        imgBtnRedirect.setVisibility(View.GONE);
+        imgBtnDirect.setVisibility(View.GONE);
 //        imgChat.setVisibility(View.GONE);
     }
     public void disableEmergencyBtn(){
         imgBtnAccept.setVisibility(View.GONE);
         imgBtnDeny.setVisibility(View.GONE);
         imgBtnCall.setVisibility(View.VISIBLE);
-        imgBtnRedirect.setVisibility(View.VISIBLE);
+        imgBtnDirect.setVisibility(View.VISIBLE);
     }
 
 //    private void getPlaceDetail(String placeId) {
@@ -249,7 +237,7 @@ public class InformationActivity extends AppCompatActivity implements View.OnCli
                 }
                 callIntent();
                 break;
-            case R.id.imgBtnRedirect:
+            case R.id.imgBtnDirect:
                 Intent intent = new Intent(getApplicationContext(), DirectionMapsActivity.class);
                 intent.putExtra("fromLat", fromLatLng.latitude);
                 intent.putExtra("fromLng", fromLatLng.longitude);

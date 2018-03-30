@@ -69,6 +69,7 @@ public class FindFragment extends Fragment implements View.OnClickListener {
     public void onClick(View view) {
         switch (view.getId()) {
             case R.id.btnFind:
+                init();
                 HomeFragment homeFragment = new HomeFragment();
                 Bundle bundle = new Bundle();
                 bundle.putString("find_others", others);

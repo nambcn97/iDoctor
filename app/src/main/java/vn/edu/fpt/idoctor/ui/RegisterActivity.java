@@ -152,8 +152,6 @@ public class RegisterActivity extends AppCompatActivity implements View.OnClickL
                 lng = place.getLatLng().longitude;
                 Log.d(DEBUG_TAG,  "LatLng: " + lat + ", " + lng);
                 edtAddress.setText(place.getAddress().toString());
-            } else {
-                edtAddress.setText("");
             }
         }
     }
@@ -206,15 +204,19 @@ public class RegisterActivity extends AppCompatActivity implements View.OnClickL
         }
         if (!rePassword.equals(password)) {
             edtRepassword.setError("Not match!!!");
+            return false;
         }
         if (fullName.isEmpty()) {
             edtFullname.setError("Please input your full name");
+            return false;
         }
         if (address.isEmpty()) {
             edtAddress.setError("Please input your address");
+            return false;
         }
         if (phone.isEmpty() || !phone.matches("[0-9]+")) {
             edtPhone.setError("Invalid phone number");
+            return false;
         }
         return true;
     }
@@ -237,7 +239,7 @@ public class RegisterActivity extends AppCompatActivity implements View.OnClickL
         try {
             Response<BaseResponse> response = call.execute();
             if (response.isSuccessful() && response.body().getResultCode() == 200){
-                return  true;
+                return true;
             }
         } catch (IOException e) {
             e.printStackTrace();

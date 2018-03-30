@@ -3,7 +3,6 @@ package vn.edu.fpt.idoctor.ui;
 
 import android.Manifest;
 import android.content.Context;
-import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -23,16 +22,8 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
-import android.widget.Toast;
-
-import com.afollestad.materialdialogs.MaterialDialog;
-import com.google.android.gms.maps.model.BitmapDescriptorFactory;
-import com.google.android.gms.maps.model.LatLng;
-import com.google.android.gms.maps.model.Marker;
-import com.google.android.gms.maps.model.MarkerOptions;
 
 import java.io.IOException;
-import java.io.Serializable;
 import java.util.HashMap;
 import java.util.List;
 
@@ -41,22 +32,17 @@ import retrofit2.Callback;
 import retrofit2.Response;
 import vn.edu.fpt.idoctor.R;
 import vn.edu.fpt.idoctor.api.model.User;
-import vn.edu.fpt.idoctor.api.response.FindDoctorResponse;
+import vn.edu.fpt.idoctor.api.response.MyInfoResponse;
 import vn.edu.fpt.idoctor.api.response.PlaceSearchResponse;
 import vn.edu.fpt.idoctor.api.service.AuthService;
-import vn.edu.fpt.idoctor.api.service.SearchService;
 import vn.edu.fpt.idoctor.api.service.UserService;
 import vn.edu.fpt.idoctor.common.GPSTracker;
 import vn.edu.fpt.idoctor.common.LogoutUtil;
-import vn.edu.fpt.idoctor.common.RetrofitClient;
 import vn.edu.fpt.idoctor.api.response.BaseResponse;
-import vn.edu.fpt.idoctor.api.service.NotificationService;
 import vn.edu.fpt.idoctor.common.ServiceGenerator;
-import vn.edu.fpt.idoctor.ui.fragment.ChatHistoryFragment;
 import vn.edu.fpt.idoctor.ui.fragment.FindFragment;
 import vn.edu.fpt.idoctor.ui.fragment.HomeFragment;
 import vn.edu.fpt.idoctor.ui.fragment.LogoutFragment;
-import vn.edu.fpt.idoctor.ui.fragment.MapTabFragment;
 import vn.edu.fpt.idoctor.ui.fragment.MyAccountFragment;
 import vn.edu.fpt.idoctor.ui.fragment.NotificationFragment;
 
@@ -77,7 +63,7 @@ public class MainActivity extends AppCompatActivity
     // tags used to attach the fragments
     private static final String TAG_HOME = "home";
     private static final String TAG_FIND = "find";
-    private static final String TAG_CHAT = "chat";
+    private static final String TAG_EMERGENCY = "emergency";
     private static final String TAG_INFO = "info";
     private static final String TAG_NOTIFICATIONS = "notifications";
     private static final String TAG_LOGOUT = "logout";
@@ -94,6 +80,7 @@ public class MainActivity extends AppCompatActivity
     private List<PlaceSearchResponse.Result> listPlace;
     private List<User> listDoctor;
     private Double myLat, myLng;
+    private User user;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -105,6 +92,8 @@ public class MainActivity extends AppCompatActivity
             SendDataTask sendDataTask = new SendDataTask();
             sendDataTask.execute();
         }
+        GetMyInfoTask getMyInfoTask = new GetMyInfoTask();
+        getMyInfoTask.execute();
         toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
@@ -124,8 +113,6 @@ public class MainActivity extends AppCompatActivity
         // load toolbar titles from string resources
         activityTitles = getResources().getStringArray(R.array.nav_item_activity_titles);
 
-        // load nav menu header data
-        loadNavHeader();
 
         // initializing navigation menu
         setUpNavigationView();
@@ -152,7 +139,20 @@ public class MainActivity extends AppCompatActivity
         }
     }
 
-    private void sendDeviceIdToServer() {
+    private void getMyInfo() {
+        UserService userService = ServiceGenerator.createService(UserService.class, API_HOST);
+        String header = String.format("Bearer %s", accessToken).trim();
+        try {
+            Response<MyInfoResponse> response = userService.getMyInfo(header).execute();
+            if (response.isSuccessful() && response.body().getResultCode() == 200) {
+                user = response.body().getMyInfo();
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void updateData() {
         String deviceId = sharedPreferences.getString(DEVICE_ID, "");
         HashMap<String, Object> body = new HashMap<>();
         body.put("deviceId", deviceId);
@@ -174,22 +174,22 @@ public class MainActivity extends AppCompatActivity
 
             @Override
             public void onFailure(Call<BaseResponse> call, Throwable t) {
-                Log.d(DEBUG_TAG, "Send deviceID: " + t.getMessage());
+                Log.d(DEBUG_TAG, "Update data: " + t.getMessage());
                 t.printStackTrace();
             }
         });
 
     }
 
-    /***
-     * Load navigation menu header information
-     * like background image, profile image
-     * name, website, notifications action view (dot)
-     */
+
     private void loadNavHeader() {
         // TODO: name, website
-        tvName.setText("Nam Bùi");
-        tvRole.setText("Bệnh nhân");
+        tvName.setText(user.getFullName());
+        if (user.getRole().equals("User")) {
+            tvRole.setText("Người dùng");
+        } else {
+            tvRole.setText("Bác sỹ");
+        }
 
         // TODO: loading header background image
 //        Glide.with(this).load(urlNavHeaderBg)
@@ -209,10 +209,7 @@ public class MainActivity extends AppCompatActivity
 //        navigationView.getMenu().getItem(3).setActionView(R.layout.menu_dot);
     }
 
-    /***
-     * Returns respected fragment that user
-     * selected from navigation menu
-     */
+
     private void loadHomeFragment() {
         // selecting appropriate nav menu item
         selectNavMenu();
@@ -225,8 +222,6 @@ public class MainActivity extends AppCompatActivity
         if (getSupportFragmentManager().findFragmentByTag(CURRENT_TAG) != null) {
             drawer.closeDrawers();
 
-            // show or hide the fab button
-//            toggleFab();
             return;
         }
 
@@ -281,12 +276,15 @@ public class MainActivity extends AppCompatActivity
                 homeFragment.setArguments(bundle);
                 return homeFragment;
             case 3:
+
+                MyAccountFragment myAccountFragment = new MyAccountFragment();
+                return myAccountFragment;
+            case 4:
+
                 // notifications fragment
                 NotificationFragment notificationFragment = new NotificationFragment();
                 return notificationFragment;
-            case 4:
-                MyAccountFragment myAccountFragment = new MyAccountFragment();
-                return myAccountFragment;
+
             case 5:
                 LogoutTask logoutTask = new LogoutTask();
                 logoutTask.execute();
@@ -316,6 +314,21 @@ public class MainActivity extends AppCompatActivity
 
     }
 
+    private class GetMyInfoTask extends AsyncTask<Void, Void, Void> {
+        @Override
+        protected Void doInBackground(Void... voids) {
+            getMyInfo();
+            return null;
+        }
+
+        @Override
+        protected void onPostExecute(Void aVoid) {
+            super.onPostExecute(aVoid);
+            // load nav menu header data
+            loadNavHeader();
+        }
+    }
+
     private class LogoutTask extends AsyncTask<Void, Void, Void> {
         @Override
         protected Void doInBackground(Void... voids) {
@@ -328,7 +341,7 @@ public class MainActivity extends AppCompatActivity
 
         @Override
         protected Object doInBackground(Object... objects) {
-            sendDeviceIdToServer();
+            updateData();
             return null;
         }
     }
@@ -362,7 +375,7 @@ public class MainActivity extends AppCompatActivity
                         break;
                     case R.id.nav_chat:
                         navItemIndex = 2;
-                        CURRENT_TAG = TAG_CHAT;
+                        CURRENT_TAG = TAG_EMERGENCY;
                         break;
                     case R.id.nav_info:
                         navItemIndex = 3;
@@ -458,107 +471,9 @@ public class MainActivity extends AppCompatActivity
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        // Handle action bar item clicks here. The action bar will
-        // automatically handle clicks on the Home/Up button, so long
-        // as you specify a parent activity in AndroidManifest.xml.
-//        int id = item.getItemId();
-//
-//        //noinspection SimplifiableIfStatement
-//        if (id == R.id.action_logout) {
-//            Toast.makeText(getApplicationContext(), "Logout user!", Toast.LENGTH_LONG).show();
-//            return true;
-//        }
-//
-//        // user is in notifications fragment
-//        // and selected 'Mark all as Read'
-//        if (id == R.id.action_mark_all_read) {
-//            Toast.makeText(getApplicationContext(), "All notifications marked as read!", Toast.LENGTH_LONG).show();
-//        }
-//
-//        // user is in notifications fragment
-//        // and selected 'Clear All'
-//        if (id == R.id.action_clear_notifications) {
-//            Toast.makeText(getApplicationContext(), "Clear all notifications!", Toast.LENGTH_LONG).show();
-//        }
 
         return super.onOptionsItemSelected(item);
     }
-
-
-//    @Override
-//    protected void onCreate(Bundle savedInstanceState) {
-//        super.onCreate(savedInstanceState);
-//        setContentView(R.layout.activity_main);
-//        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
-//        setSupportActionBar(toolbar);
-//
-//        DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
-//        ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
-//                this, drawer, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close);
-//        drawer.addDrawerListener(toggle);
-//        toggle.syncState();
-//
-//        NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
-//        navigationView.setNavigationItemSelectedListener(this);
-//    }
-//
-//    @Override
-//    public void onBackPressed() {
-//        DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
-//        if (drawer.isDrawerOpen(GravityCompat.START)) {
-//            drawer.closeDrawer(GravityCompat.START);
-//        } else {
-//            //TODO: exit? or not
-//            super.onBackPressed();
-//        }
-//    }
-//
-//    @Override
-//    public boolean onCreateOptionsMenu(Menu menu) {
-//        // Inflate the menu; this adds items to the action bar if it is present.
-//        getMenuInflater().inflate(R.menu.main, menu);
-//        return true;
-//    }
-//
-//    @Override
-//    public boolean onOptionsItemSelected(MenuItem item) {
-//        // Handle action bar item clicks here. The action bar will
-//        // automatically handle clicks on the Home/Up button, so long
-//        // as you specify a parent activity in AndroidManifest.xml.
-//        int id = item.getItemId();
-//
-//        //noinspection SimplifiableIfStatement
-//        if (id == R.id.action_settings) {
-//            return true;
-//        }
-//
-//        return super.onOptionsItemSelected(item);
-//    }
-//
-//    @SuppressWarnings("StatementWithEmptyBody")
-//    @Override
-//    public boolean onNavigationItemSelected(MenuItem item) {
-//        // Handle navigation view item clicks here.
-//        int id = item.getItemId();
-//
-//        if (id == R.id.nav_home) {
-//            // Handle the camera action
-//        } else if (id == R.id.nav_info) {
-//
-//        } else if (id == R.id.nav_chat) {
-//
-//        } else if (id == R.id.nav_find) {
-//
-//        } else if (id == R.id.nav_notification) {
-//
-//        } else if (id == R.id.nav_logout) {
-//
-//        }
-//
-//        DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
-//        drawer.closeDrawer(GravityCompat.START);
-//        return true;
-//    }
 
 
 }
